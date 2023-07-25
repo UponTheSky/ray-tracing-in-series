@@ -83,6 +83,16 @@ hittable_list random_scene() {
   return world;
 }
 
+hittable_list two_perlin_spheres() {
+  hittable_list objects;
+
+  auto pertext = make_shared<noise_texture>();
+  objects.add(make_shared<sphere>(point3(0,-5,0), 5, make_shared<lambertian>(pertext)));
+  objects.add(make_shared<sphere>(point3(0, 1, 0), 1, make_shared<lambertian>(pertext)));
+
+  return objects;
+}
+
 int main() {
   // image
   const double aspect_ratio = 16.0 / 9.0;
@@ -106,9 +116,15 @@ int main() {
           aperture = 0.1;
           break;
 
-      default:
       case 2:
           world = two_spheres();
+          lookfrom = point3(13,2,3);
+          lookat = point3(0,0,0);
+          vfov = 20.0;
+          break;
+      default:
+      case 3:
+          world = two_perlin_spheres();
           lookfrom = point3(13,2,3);
           lookat = point3(0,0,0);
           vfov = 20.0;
