@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include "rtweekend.h"
+#include "texture.h"
 
 class material {
   public:
@@ -10,7 +11,9 @@ class material {
 
 class lambertian : public material {
   public:
-    lambertian(const color& a): albedo(a) {}
+    lambertian(const color& a): albedo(make_shared<solid_color>(a)) {}
+    lambertian(shared_ptr<texture> a) : albedo(a) {}
+
 
     virtual bool scatter(
       const ray& r_in,
@@ -23,13 +26,13 @@ class lambertian : public material {
         scattered_direction = rec.normal;
       }
 
-      scattered = ray(rec.p, scattered_direction);
-      attenuation = albedo;
+      scattered = ray(rec.p, scattered_direction, r_in.time());
+      attenuation = albedo->value(rec.u, rec.v, rec.p);
       return true;
     }
 
   public:
-    color albedo;
+    shared_ptr<texture> albedo;
 };
 
 class metal : public material {
@@ -40,7 +43,7 @@ class metal : public material {
      const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
     ) const override {
       vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-      scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere());
+      scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
       attenuation = albedo;
       return dot(scattered.direction(), rec.normal) > 0;
     }
@@ -68,7 +71,7 @@ class dielectric : public material {
         ? reflect(unit_direction, rec.normal)
         : refract(unit_direction, rec.normal, refraction_ratio);
 
-      scattered = ray(rec.p, direction);
+      scattered = ray(rec.p, direction, r_in.time());
       return true;
     }
 
