@@ -1,5 +1,5 @@
-#ifndef RTWEEKEND_H
-#define RTWEEKEND_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <cmath>
 #include <limits>
@@ -34,10 +34,5 @@ inline double clamp(double x, double min, double max) {
 inline int random_int(int min, int max) {
   return static_cast<int>(random_double(min, max + 1));
 }
-
-
-#include "ray.h"
-#include "hittable.h"
-#include "material.h"
 
 #endif

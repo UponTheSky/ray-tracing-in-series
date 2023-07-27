@@ -1,9 +1,11 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
-#include "rtweekend.h"
-#include "hittable.h"
-#include "vec3.h"
+#include "utils/utils.h"
+#include "common/vec3.h"
+#include "object/core/hittable.h"
+#include "object/core/aabb.h"
+#include "object/material/material.h"
 
 class sphere : public hittable {
     public:

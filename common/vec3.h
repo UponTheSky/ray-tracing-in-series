@@ -3,7 +3,8 @@
 
 #include <cmath>
 #include <iostream>
-#include "rtweekend.h"
+
+#include "utils/utils.h"
 
 using std::sqrt;
 

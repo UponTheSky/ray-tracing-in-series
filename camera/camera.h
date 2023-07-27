@@ -1,7 +1,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "rtweekend.h"
+#include "utils/utils.h"
+#include "common/vec3.h"
+#include "common/ray.h"
 
 class camera {
   public:

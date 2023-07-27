@@ -1,11 +1,12 @@
 #ifndef HITTABLE_LIST_H
 #define HITTABLE_LIST_H
 
-#include "hittable.h"
-#include "aabb.h"
-
 #include <memory>
 #include <vector>
+
+#include "object/core/hittable.h"
+#include "object/core/aabb.h"
+
 
 using std::shared_ptr;
 using std::make_shared;

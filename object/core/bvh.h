@@ -3,14 +3,15 @@
 
 #include <algorithm>
 
-#include "rtweekend.h"
-
-#include "hittable.h"
-#include "hittable_list.h"
+#include "utils/utils.h"
+#include "common/ray.h"
+#include "object/core/hittable.h"
+#include "object/core/hittable_list.h"
+#include "object/core/aabb.h"
 
 class bvh_node : public hittable {
   public:
-    bvh_node();
+    bvh_node() = default;
 
     bvh_node(const hittable_list& list, double time0, double time1)
     : bvh_node(list.objects, 0, list.objects.size(), time0, time1) {}
