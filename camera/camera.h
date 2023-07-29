@@ -7,6 +7,7 @@
 
 class camera {
   public:
+    camera() = default;
     camera(
       point3 lookfrom,
       point3 lookat,

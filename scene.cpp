@@ -1,3 +1,48 @@
+#include "scene.h"
+
+camera scene::create_camera(
+  point3 lookfrom,
+  point3 lookat,
+  vec3 vup,
+  double vfov,
+  double aspect_ratio,
+  double aperture,
+  double focus_dist,
+  double _time0 = 0,
+  double _time1 = 0
+) {
+  return camera(
+    lookfrom,
+    lookat,
+    vup,
+    vfov,
+    aspect_ratio,
+    aperture,
+    focus_dist,
+    _time0 = 0,
+    _time1 = 0
+  );
+}
+
+void scene::render(scene_generator func) {
+  hittable_list world = func();
+  std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+
+  for (int j = image_height - 1; j >= 0; j--) {
+    std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+    for (int i = 0; i < image_width; i++) {
+      color pixel_color(0, 0, 0);
+      for (int s = 0; s < samples_per_pixel; ++s) {
+        double u = double(i + random_double()) / (image_width - 1);
+        double v = double(j + random_double()) / (image_height - 1);
+        ray r = cam.get_ray(u, v);
+        pixel_color += ray_color(r, background, world, max_depth);
+      }
+      write_color(std::cout, pixel_color, samples_per_pixel);
+    }
+  }
+  std::cerr << "\nDone.\n";
+}
 
 color ray_color(const ray& r, const color& background, const hittable& world, int depth) {
   hit_record rec;
