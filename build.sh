@@ -1,5 +1,6 @@
-g++ -std=c++17 -o main main.cpp json_parser.cpp
+cmake -S . -B ./build
+cmake --build ./build
+./build/ctest
 
-./main > image.ppm
 
 # open image.ppm
