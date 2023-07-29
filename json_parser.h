@@ -1,21 +1,29 @@
 #include <string>
-#include <stdlib.h>
-#include <memory>
-
-#include <fstream>
+#include <map>
+#include <utility> // for std::pair
 
 namespace JsonParser {
   using text_it = std::string::iterator;
 
+  /**
+   * @brief A union value representing the value part of (key, value) pair.
+   */
   union JsonValue {
     int i;
     double d;
-    JsonValue* json = nullptr;
+    std::map<std::string, JsonValue>* json;
   };
 
-  std::string& ReadFile(std::string filepath, std::string& output);
+  void ReadFile(const std::string& filepath, std::string& output);
 
   JsonValue ParsePrimitive(const std::string& text, text_it start, text_it end);
 
-  JsonValue ParseJsonValue();
+  std::pair<std::string, JsonValue> RetriveKeyValuePair(
+    const std::string& text,
+    text_it& it
+  );
+
+  JsonValue ParseJsonHelper(const std::string& text, text_it& it);
+
+  JsonValue ParseJson(const std::string& filepath);
 }

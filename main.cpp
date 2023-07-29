@@ -96,13 +96,7 @@ int main() {
 
   // render
 
-  // std::string file_read;
-  // std::cout << JsonParser::ReadFile("test.json", file_read) << std::endl;
-
-  std::string text = "15.23143";
-  JsonParser::JsonValue test = JsonParser::ParsePrimitive(text, text.begin(), text.end());
-  // JsonParser::JsonValue = JsonParser::ParsePrimitive(text, text.begin(), text.end());
-  std::cout << test.d << std::endl;
-
+  auto json = JsonParser::ParseJson("test.json");
+  std::cout << (*(*json.json)["eight"].json)["nine"].d << std::endl;
   return 0;
 }
