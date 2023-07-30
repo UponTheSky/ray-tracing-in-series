@@ -1,5 +1,5 @@
 #include <iostream>
-#include "json_parser.h"
+#include "ray_tracer/utils/json_parser.h"
 
 
 int main() {
@@ -96,7 +96,7 @@ int main() {
 
   // render
 
-  auto json = JsonParser::ParseJson("test.json");
-  std::cout << (*(*json.json)["eight"].json)["nine"].d << std::endl;
+  auto json = JsonParser::ParseJson("json_no_nest.json");
+  std::cout << (*json.json)["two"].d << std::endl;
   return 0;
 }

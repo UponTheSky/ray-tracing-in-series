@@ -3,6 +3,7 @@
 #include "common/color.h"
 #include "camera/camera.h"
 #include "object/object.h"
+
 class scene {
   public:
     scene() = default;

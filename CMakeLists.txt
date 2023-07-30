@@ -18,9 +18,12 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+include_directories("ray_tracer/utils")
+
 add_executable(
   project_test
   tests/utils/json_parser_test.cpp
+  ray_tracer/utils/json_parser.cpp
 )
 
 target_link_libraries(project_test GTest::gtest_main)

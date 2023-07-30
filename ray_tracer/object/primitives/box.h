@@ -7,7 +7,7 @@
 #include "object/core/hittable.h"
 #include "object/core/hittable_list.h"
 #include "object/core/aabb.h"
-#include "aarect.h"
+#include "object/core/aarect.h"
 
 class box : public hittable {
   public:
