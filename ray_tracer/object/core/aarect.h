@@ -1,12 +1,12 @@
 #ifndef AARECT_H
 #define AARECT_H
 
-#include "utils/utils.h"
-#include "common/vec3.h"
-#include "common/ray.h"
-#include "object/material/material.h"
-#include "object/core/aabb.h"
-#include "object/core/hittable.h"
+#include "../../utils/utils.h"
+#include "../../common/vec3.h"
+#include "../../common/ray.h"
+#include "../material/material.h"
+#include "aabb.h"
+#include "hittable.h"
 
 class xy_rect : public hittable {
   public:

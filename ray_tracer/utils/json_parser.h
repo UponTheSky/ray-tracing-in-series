@@ -1,3 +1,6 @@
+#ifndef JSON_PARSER_H
+#define JSON_PARSER_H
+
 #include <string>
 #include <map>
 #include <utility> // for std::pair
@@ -27,3 +30,5 @@ namespace JsonParser {
 
   JsonValue ParseJson(const std::string& filepath);
 }
+
+#endif

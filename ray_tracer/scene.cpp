@@ -19,8 +19,8 @@ camera scene::create_camera(
     aspect_ratio,
     aperture,
     focus_dist,
-    _time0 = 0,
-    _time1 = 0
+    _time0,
+    _time1
   );
 }
 

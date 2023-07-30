@@ -1,9 +1,10 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "utils/utils.h"
-#include "common/ray.h"
-#include "object/material/texture.h"
+#include "../../utils/utils.h"
+#include "../../common/ray.h"
+#include "../core/hittable.h"
+#include "texture.h"
 
 class material {
   public:

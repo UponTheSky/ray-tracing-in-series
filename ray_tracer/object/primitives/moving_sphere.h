@@ -1,11 +1,11 @@
 #ifndef MOVING_SPHERE_H
 #define MOVING_SPHERE_H
 
-#include "common/vec3.h"
-#include "common/ray.h"
-#include "object/core/hittable.h"
-#include "object/core/aabb.h"
-#include "object/material/material.h"
+#include "../../common/vec3.h"
+#include "../../common/ray.h"
+#include "../core/hittable.h"
+#include "../core/aabb.h"
+#include "../material/material.h"
 
 
 class moving_sphere : public hittable {

@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "object/core/hittable.h"
-#include "object/core/aabb.h"
+#include "hittable.h"
+#include "aabb.h"
 
 
 using std::shared_ptr;

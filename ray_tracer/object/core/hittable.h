@@ -1,9 +1,9 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
-#include "utils/utils.h"
-#include "common/ray.h"
-#include "object/core/aabb.h"
+#include "../../utils/utils.h"
+#include "../../common/ray.h"
+#include "aabb.h"
 
 class material;
 

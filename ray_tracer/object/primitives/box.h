@@ -1,13 +1,13 @@
 #ifndef BOX_H
 #define BOX_H
 
-#include "utils/utils.h"
-#include "common/vec3.h"
-#include "object/material/material.h"
-#include "object/core/hittable.h"
-#include "object/core/hittable_list.h"
-#include "object/core/aabb.h"
-#include "object/core/aarect.h"
+#include "../../utils/utils.h"
+#include "../../common/vec3.h"
+#include "../material/material.h"
+#include "../core/hittable.h"
+#include "../core/hittable_list.h"
+#include "../core/aabb.h"
+#include "../core/aarect.h"
 
 class box : public hittable {
   public:

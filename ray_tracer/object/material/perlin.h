@@ -1,7 +1,7 @@
 #ifndef PERLIN_H
 #define PERLIN_H
 
-#include "common/vec3.h"
+#include "../../common/vec3.h"
 
 class perlin {
   public:

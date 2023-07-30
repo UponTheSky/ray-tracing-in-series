@@ -1,0 +1,33 @@
+{
+  // member data
+  "image_width": 600,
+  "samples_per_pixel": 20,
+  "background": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "max_depth": 10,
+  // camera parameters
+  "lookfrom": {
+    "x": 278,
+    "y": 278,
+    "z": 800 // negative
+  },
+  "lookat": {
+    "x": 278,
+    "y": 278,
+    "z": 0
+  },
+  "vup": {
+    "x": 0,
+    "y": 1,
+    "z": 0
+  },
+  "vfov": 40.0,
+  "aspect_ratio": 1.0,
+  "aperture": 0.0,
+  "dist_to_focus": 10.0,
+  "time0": 0,
+  "time1": 0
+}

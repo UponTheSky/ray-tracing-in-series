@@ -1,8 +1,8 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "utils/rtw_stb_image.h"
-#include "object/material/perlin.h"
+#include "../../utils/rtw_stb_image.h"
+#include "perlin.h"
 
 class texture {
   public:

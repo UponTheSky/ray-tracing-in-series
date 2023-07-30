@@ -6,7 +6,7 @@
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "external/stb_image.h"
+#include "../external/stb_image.h"
 
 #ifdef _MSC_VER
   #pragma warning (pop)

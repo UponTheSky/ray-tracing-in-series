@@ -1,3 +1,6 @@
+#ifndef SCENE_H
+#define SCENE_H
+
 #include <iostream>
 
 #include "common/color.h"
@@ -54,8 +57,8 @@ class scene {
       double aspect_ratio,
       double aperture,
       double focus_dist,
-      double _time0 = 0,
-      double _time1 = 0
+      double _time0,
+      double _time1
     );
 };
 
@@ -68,3 +71,5 @@ hittable_list earth();
 hittable_list simple_light();
 hittable_list cornell_box();
 hittable_list cornell_smoke();
+
+#endif

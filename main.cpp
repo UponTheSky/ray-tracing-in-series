@@ -1,102 +1,57 @@
-#include <iostream>
 #include "ray_tracer/utils/json_parser.h"
+#include "ray_tracer/scene.h"
 
+using JsonMap = std::map<std::string, JsonParser::JsonValue>;
 
 int main() {
-//   // image
-//   color background(0, 0, 0);
-//   hittable_list world;
-//   point3 lookfrom;
-//   point3 lookat;
-//   auto vfov = 40.0;
-//   auto aperture = 0.0;
-//   double aspect_ratio = 16.0 / 9.0;
-//   int image_width = 400;
-//   int samples_per_pixel = 10;
-//   const int max_depth = 10;
+  // parse the config
+  JsonParser::JsonValue config = JsonParser::ParseJson("config.json");
+  JsonMap config_json = (*config.json);
 
+  // member data
+  size_t image_width = (size_t)(config_json["image_width"].i);
+  size_t samples_per_pixel = (size_t)(config_json["samples_per_pixel"].i);
 
+  JsonMap bgcolor_json = (*config_json["background"].json);
+  color background((double)(bgcolor_json["r"].i),  (double)(bgcolor_json["g"].i), (double)(bgcolor_json["b"].i));
+  int max_depth = config_json["max_depth"].i;
 
+  // camera parameters
+  JsonMap lookfrom_json = (*config_json["lookfrom"].json);
+  point3 lookfrom((double(lookfrom_json["x"].i)), (double(lookfrom_json["y"].i)), -(double(lookfrom_json["z"].i)));
 
+  JsonMap lookat_json = (*config_json["lookat"].json);
+  point3 lookat((double(lookat_json["x"].i)), (double(lookat_json["y"].i)), (double(lookat_json["z"].i)));
 
+  JsonMap vup_json = (*config_json["vup"].json);
+  vec3 vup((double(vup_json["x"].i)), (double(vup_json["y"].i)), (double(vup_json["z"].i)));
 
+  double vfov = config_json["vfov"].d;
+  double aspect_ratio = config_json["aspect_ratio"].d;
+  double aperture = config_json["aperture"].d;
+  double dist_to_focus = config_json["dist_to_focus"].d;
+  double time0 = config_json["time0"].d;
+  double time1 = config_json["time1"].d;
 
-//   switch (0) {
-//       case 1:
-//           background = color(0.7, 0.8, 1);
-//           world = random_scene();
-//           lookfrom = point3(13,2,3);
-//           lookat = point3(0,0,0);
-//           vfov = 20.0;
-//           aperture = 0.1;
-//           break;
-
-//       case 2:
-//           background = color(0.7, 0.8, 1);
-//           world = two_spheres();
-//           lookfrom = point3(13,2,3);
-//           lookat = point3(0,0,0);
-//           vfov = 20.0;
-//           break;
-
-//       case 3:
-//           background = color(0.7, 0.8, 1);
-//           world = two_perlin_spheres();
-//           lookfrom = point3(13,2,3);
-//           lookat = point3(0,0,0);
-//           vfov = 20.0;
-//           break;
-
-//       case 4:
-//           background = color(0.7, 0.8, 1);
-//           world = earth();
-//           lookfrom = point3(13,2,3);
-//           lookat = point3(0,0,0);
-//           vfov = 20.0;
-//           break;
-
-//       case 5:
-//           world = simple_light();
-//           samples_per_pixel = 400;
-//           background = color(0,0,0);
-//           lookfrom = point3(26,3,6);
-//           lookat = point3(0,2,0);
-//           vfov = 20.0;
-//           break;
-
-//       case 6:
-//         world = cornell_box();
-//         aspect_ratio = 1.0;
-//         image_width = 600;
-//         samples_per_pixel = 20;
-//         background = color(0,0,0);
-//         lookfrom = point3(278, 278, -800);
-//         lookat = point3(278, 278, 0);
-//         vfov = 40.0;
-//         break;
-
-//       default:
-//       case 7:
-//           world = cornell_smoke();
-//           aspect_ratio = 1.0;
-//           image_width = 600;
-//           samples_per_pixel = 20;
-//           lookfrom = point3(278, 278, -800);
-//           lookat = point3(278, 278, 0);
-//           vfov = 40.0;
-//           break;
-// }
-
-//   // Camera
-//   vec3 vup(0,1,0);
-//   auto dist_to_focus = 10.0;
-//   int image_height = static_cast<int>(image_width / aspect_ratio);
-
-//   camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+  // generate the scene
+  scene current_scene(
+    image_width,
+    samples_per_pixel,
+    background,
+    max_depth,
+    lookfrom,
+    lookat,
+    vup,
+    vfov,
+    aspect_ratio,
+    aperture,
+    dist_to_focus,
+    time0,
+    time1
+  );
 
   // render
+  current_scene.render(cornell_box);
 
-  auto json = JsonParser::ParseJson("json_no_nest.json");
-  std::cout << (*json.json)["two"].d << std::endl;
   return 0;
 }

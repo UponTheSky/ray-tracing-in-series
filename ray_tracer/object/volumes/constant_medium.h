@@ -1,10 +1,10 @@
 #ifndef CONSTANT_MEDIUM_H
 #define CONSTANT_MEDIUM_H
 
-#include "utils/utils.h"
-#include "common/ray.h"
-#include "object/core/hittable.h"
-#include "object/material/material.h"
+#include "../../utils/utils.h"
+#include "../../common/ray.h"
+#include "../core/hittable.h"
+#include "../material/material.h"
 
 class constant_medium : public hittable {
   public:

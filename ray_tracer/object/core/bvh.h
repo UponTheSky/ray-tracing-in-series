@@ -3,11 +3,11 @@
 
 #include <algorithm>
 
-#include "utils/utils.h"
-#include "common/ray.h"
-#include "object/core/hittable.h"
-#include "object/core/hittable_list.h"
-#include "object/core/aabb.h"
+#include "../../utils/utils.h"
+#include "../../common/ray.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "aabb.h"
 
 class bvh_node : public hittable {
   public:
@@ -70,6 +70,7 @@ inline bool box_compare(const shared_ptr<hittable> a, const shared_ptr<hittable>
 
     default:
       std::cerr << "The axis must be one of 0, 1, or 2";
+      return false;
   }
 }
 
