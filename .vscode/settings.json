@@ -82,6 +82,12 @@
     "iomanip": "cpp",
     "stack": "cpp",
     "__tree": "cpp",
-    "map": "cpp"
+    "map": "cpp",
+    "any": "cpp",
+    "forward_list": "cpp",
+    "list": "cpp",
+    "set": "cpp",
+    "unordered_set": "cpp",
+    "source_location": "cpp"
   }
 }
