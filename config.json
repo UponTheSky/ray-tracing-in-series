@@ -1,5 +1,4 @@
 {
-  // member data
   "image_width": 600,
   "samples_per_pixel": 20,
   "background": {
@@ -8,11 +7,10 @@
     "b": 0
   },
   "max_depth": 10,
-  // camera parameters
   "lookfrom": {
     "x": 278,
     "y": 278,
-    "z": 800 // negative
+    "z": 800
   },
   "lookat": {
     "x": 278,

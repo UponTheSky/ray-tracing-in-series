@@ -7,6 +7,8 @@
 #include "camera/camera.h"
 #include "object/object.h"
 
+color ray_color(const ray& r, const color& background, const hittable& world, int depth);
+
 class scene {
   public:
     scene() = default;
@@ -221,6 +223,10 @@ hittable_list cornell_box() {
   shared_ptr<hittable> box2 = make_shared<box>(point3(0,0,0), point3(165,165,165), white);
   box2 = make_shared<rotate_y>(box2, -18);
   box2 = make_shared<translate>(box2, vec3(130,0,65));
+
+
+  objects.add(box1);
+  objects.add(box2);
 
   return objects;
 }

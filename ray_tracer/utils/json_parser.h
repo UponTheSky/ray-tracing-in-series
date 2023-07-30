@@ -9,6 +9,8 @@
 #include <cassert> // for assert()
 #include <cctype> // for isdigit()
 
+#include <iostream>
+
 namespace JsonParser {
   using text_it = std::string::iterator;
 
@@ -20,6 +22,15 @@ namespace JsonParser {
     double d;
     std::map<std::string, JsonValue>* json;
   };
+
+  void ReadFile(const std::string& filepath, std::string& output);
+  JsonValue ParsePrimitive(const std::string& text, text_it start, text_it end);
+  std::pair<std::string, JsonValue> RetriveKeyValuePair(
+    const std::string& text,
+    text_it& it
+  );
+  JsonValue ParseJsonHelper(const std::string& text, text_it& it);
+
 
   JsonValue ParseJson(const std::string& filepath) {
     // 1. read the text data from the given file
