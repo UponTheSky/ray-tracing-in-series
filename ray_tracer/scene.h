@@ -2,6 +2,8 @@
 #define SCENE_H
 
 #include <iostream>
+#include "omp.h"
+#include <vector>
 
 #include "common/color.h"
 #include "camera/camera.h"
@@ -42,18 +44,29 @@ class scene {
     void render(scene_generator func) {
       hittable_list world = func();
       std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+      std::vector<std::vector<color>> color_array(image_height, std::vector<color>(image_width));
+
+      #pragma omp parallel num_threads(4)
+      #pragma omp parallel
+      {
+        #pragma omp for
+        for (int j = image_height - 1; j >= 0; j--) {
+          std::cerr << "\rCalculating colors - thread num: " << omp_get_thread_num() << ", scanlines remaining: " << j << ' ' << std::flush;
+          for (int i = 0; i < image_width; i++) {
+            for (int s = 0; s < samples_per_pixel; ++s) {
+              double u = double(i + random_double()) / (image_width - 1);
+              double v = double(j + random_double()) / (image_height - 1);
+              ray r = cam.get_ray(u, v);
+              color_array[j][i] += ray_color(r, background, world, max_depth);
+            }
+          }
+        }
+      }
 
       for (int j = image_height - 1; j >= 0; j--) {
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+        std::cerr << "\rRedirecting to the stdout - scanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; i++) {
-          color pixel_color(0, 0, 0);
-          for (int s = 0; s < samples_per_pixel; ++s) {
-            double u = double(i + random_double()) / (image_width - 1);
-            double v = double(j + random_double()) / (image_height - 1);
-            ray r = cam.get_ray(u, v);
-            pixel_color += ray_color(r, background, world, max_depth);
-          }
-          write_color(std::cout, pixel_color, samples_per_pixel);
+          write_color(std::cout, color_array[j][i], samples_per_pixel);
         }
       }
       std::cerr << "\nDone.\n";
