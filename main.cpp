@@ -1,3 +1,6 @@
+#include <iostream>
+#include <chrono>
+
 #include "ray_tracer/utils/json_parser.h"
 #include "ray_tracer/scene.h"
 
@@ -51,7 +54,12 @@ int main() {
   );
 
   // render
+
+  const auto start = std::chrono::steady_clock::now();
   current_scene.render(cornell_box);
+  const auto end = std::chrono::steady_clock::now();
+  const std::chrono::duration<double> elapsed_seconds = end - start;
+  std::cerr << "Rendering the scene takes " << elapsed_seconds.count() << " seconds" << std::endl;
 
   return 0;
 }
