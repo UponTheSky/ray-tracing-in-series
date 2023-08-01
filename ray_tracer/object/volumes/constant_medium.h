@@ -1,33 +1,42 @@
 #ifndef CONSTANT_MEDIUM_H
 #define CONSTANT_MEDIUM_H
 
-#include "../../utils/utils.h"
 #include "../../common/ray.h"
+#include "../../utils/utils.h"
 #include "../core/hittable.h"
 #include "../material/material.h"
 
 class constant_medium : public hittable {
-  public:
-    constant_medium(shared_ptr<hittable> b, double d, shared_ptr<texture> a)
-    : boundary(b), neg_inv_density(-1/d), phase_function(make_shared<isotropic>(a)) {}
+ public:
+  constant_medium(shared_ptr<hittable> b, double d, shared_ptr<texture> a)
+      : boundary(b),
+        neg_inv_density(-1 / d),
+        phase_function(make_shared<isotropic>(a)) {}
 
-    constant_medium(shared_ptr<hittable> b, double d, color c)
-    : boundary(b), neg_inv_density(-1/d), phase_function(make_shared<isotropic>(c)) {}
+  constant_medium(shared_ptr<hittable> b, double d, color c)
+      : boundary(b),
+        neg_inv_density(-1 / d),
+        phase_function(make_shared<isotropic>(c)) {}
 
-    virtual bool hit(
-      const ray& r, double t_min, double t_max, hit_record& rec) const override;
+  virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec)
+      const override;
 
-    virtual bool bounding_box(double time0, double time1, aabb& output_box) const override {
-      return boundary->bounding_box(time0, time1, output_box);
-    }
+  virtual bool bounding_box(double time0, double time1, aabb& output_box)
+      const override {
+    return boundary->bounding_box(time0, time1, output_box);
+  }
 
-  private:
-    shared_ptr<hittable> boundary;
-    shared_ptr<material> phase_function;
-    double neg_inv_density;
+ private:
+  shared_ptr<hittable> boundary;
+  shared_ptr<material> phase_function;
+  double neg_inv_density;
 };
 
-bool constant_medium::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
+bool constant_medium::hit(
+    const ray& r,
+    double t_min,
+    double t_max,
+    hit_record& rec) const {
   const bool enable_debug = false;
   const bool debugging = enable_debug && random_double() < 0.00001;
 
@@ -73,9 +82,9 @@ bool constant_medium::hit(const ray& r, double t_min, double t_max, hit_record& 
   rec.p = r.at(rec.t);
 
   if (debugging) {
-    std::cerr << "hit_distance = " <<  hit_distance << '\n'
-              << "rec.t = " <<  rec.t << '\n'
-              << "rec.p = " <<  rec.p << '\n';
+    std::cerr << "hit_distance = " << hit_distance << '\n'
+              << "rec.t = " << rec.t << '\n'
+              << "rec.p = " << rec.p << '\n';
   }
 
   rec.normal = vec3(1, 0, 0);

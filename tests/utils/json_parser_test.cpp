@@ -5,7 +5,8 @@
 using namespace JsonParser;
 
 TEST(JsonParserTest, TestJsonWithNoNests) {
-  std::string json_text = "{ \"one\": 1, \n \"two\": 2.2, \n \"three\": 3.3 \n }";
+  std::string json_text =
+      "{ \"one\": 1, \n \"two\": 2.2, \n \"three\": 3.3 \n }";
   text_it start = json_text.begin();
   JsonValue parsed = ParseJsonHelper(json_text, start);
   EXPECT_EQ((*parsed.json)["one"].i, 1);
@@ -13,7 +14,8 @@ TEST(JsonParserTest, TestJsonWithNoNests) {
 };
 
 TEST(JsonParserTest, TestJsonWithNests) {
-  std::string json_text = "{\n \"one\": 1,\n \"two\": {\n\"three\": 3, \n \"four\": { \n\"five\": 5 \n } \n }, \n \"six\": {\n\"seven\": 7\n } \n}";
+  std::string json_text =
+      "{\n \"one\": 1,\n \"two\": {\n\"three\": 3, \n \"four\": { \n\"five\": 5 \n } \n }, \n \"six\": {\n\"seven\": 7\n } \n}";
   text_it start = json_text.begin();
   JsonValue parsed = ParseJsonHelper(json_text, start);
 

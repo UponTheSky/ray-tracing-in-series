@@ -2,12 +2,12 @@
 #define UTILS_H
 
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <memory>
-#include <cstdlib>
 
-using std::shared_ptr;
 using std::make_shared;
+using std::shared_ptr;
 using std::sqrt;
 
 const double infinity = std::numeric_limits<double>::infinity();
@@ -26,8 +26,10 @@ inline double random_double(double min, double max) {
 }
 
 inline double clamp(double x, double min, double max) {
-  if (x < min) return min;
-  if (x > max) return max;
+  if (x < min)
+    return min;
+  if (x > max)
+    return max;
   return x;
 }
 

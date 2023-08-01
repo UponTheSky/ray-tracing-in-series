@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "vec3.h"
 #include "../utils/utils.h"
+#include "vec3.h"
 
 void write_color(std::ostream& out, color& pixel_color, int samples_per_pixel) {
   double r = pixel_color.x();

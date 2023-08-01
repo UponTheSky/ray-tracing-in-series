@@ -3,16 +3,20 @@
 
 #include <iostream>
 
-#include "common/color.h"
 #include "camera/camera.h"
+#include "common/color.h"
 #include "object/object.h"
 
-color ray_color(const ray& r, const color& background, const hittable& world, int depth);
+color ray_color(
+    const ray& r,
+    const color& background,
+    const hittable& world,
+    int depth);
 
 class scene {
-  public:
-    scene() = default;
-    scene(
+ public:
+  scene() = default;
+  scene(
       // member data
       size_t image_width,
       size_t samples_per_pixel,
@@ -27,49 +31,57 @@ class scene {
       double aperture,
       double dist_to_focus,
       double time0,
-      double time1
-    ) : image_width(image_width),
+      double time1)
+      : image_width(image_width),
         image_height(int(image_width / aspect_ratio)),
         samples_per_pixel(samples_per_pixel),
         background(background),
-        max_depth(max_depth)
-    {
-      cam = create_camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, time0, time1);
-    }
+        max_depth(max_depth) {
+    cam = create_camera(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        dist_to_focus,
+        time0,
+        time1);
+  }
 
-    using scene_generator = hittable_list (*)();
+  using scene_generator = hittable_list (*)();
 
-    void render(scene_generator func) {
-      hittable_list world = func();
-      std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+  void render(scene_generator func) {
+    hittable_list world = func();
+    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
-      for (int j = image_height - 1; j >= 0; j--) {
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-        for (int i = 0; i < image_width; i++) {
-          color pixel_color(0, 0, 0);
-          for (int s = 0; s < samples_per_pixel; ++s) {
-            double u = double(i + random_double()) / (image_width - 1);
-            double v = double(j + random_double()) / (image_height - 1);
-            ray r = cam.get_ray(u, v);
-            pixel_color += ray_color(r, background, world, max_depth);
-          }
-          write_color(std::cout, pixel_color, samples_per_pixel);
+    for (int j = image_height - 1; j >= 0; j--) {
+      std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+      for (int i = 0; i < image_width; i++) {
+        color pixel_color(0, 0, 0);
+        for (int s = 0; s < samples_per_pixel; ++s) {
+          double u = double(i + random_double()) / (image_width - 1);
+          double v = double(j + random_double()) / (image_height - 1);
+          ray r = cam.get_ray(u, v);
+          pixel_color += ray_color(r, background, world, max_depth);
         }
+        write_color(std::cout, pixel_color, samples_per_pixel);
       }
-      std::cerr << "\nDone.\n";
     }
+    std::cerr << "\nDone.\n";
+  }
 
-  private:
-    // hyper paramters for rendering
-    size_t image_width;
-    size_t image_height;
-    size_t samples_per_pixel;
-    color background;
-    int max_depth;
+ private:
+  // hyper paramters for rendering
+  size_t image_width;
+  size_t image_height;
+  size_t samples_per_pixel;
+  color background;
+  int max_depth;
 
-    // camera
-    camera cam;
-    static camera create_camera(
+  // camera
+  camera cam;
+  static camera create_camera(
       point3 lookfrom,
       point3 lookat,
       vec3 vup,
@@ -78,9 +90,8 @@ class scene {
       double aperture,
       double focus_dist,
       double _time0,
-      double _time1
-    ) {
-      return camera(
+      double _time1) {
+    return camera(
         lookfrom,
         lookat,
         vup,
@@ -89,12 +100,15 @@ class scene {
         aperture,
         focus_dist,
         _time0,
-        _time1
-      );
-    }
+        _time1);
+  }
 };
 
-color ray_color(const ray& r, const color& background, const hittable& world, int depth) {
+color ray_color(
+    const ray& r,
+    const color& background,
+    const hittable& world,
+    int depth) {
   hit_record rec;
   if (depth <= 0) {
     return color(0, 0, 0);
@@ -111,15 +125,19 @@ color ray_color(const ray& r, const color& background, const hittable& world, in
     return emitted;
   }
 
-  return emitted + attenuation * ray_color(scattered, background, world, depth-1);
+  return emitted +
+      attenuation * ray_color(scattered, background, world, depth - 1);
 }
 
 hittable_list two_spheres() {
   hittable_list objects;
 
-  auto checker = make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
-  objects.add(make_shared<sphere>(point3(0,-10,0), 10, make_shared<lambertian>(checker)));
-  objects.add(make_shared<sphere>(point3(0, 10,0), 10, make_shared<lambertian>(checker)));
+  auto checker =
+      make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
+  objects.add(make_shared<sphere>(
+      point3(0, -10, 0), 10, make_shared<lambertian>(checker)));
+  objects.add(make_shared<sphere>(
+      point3(0, 10, 0), 10, make_shared<lambertian>(checker)));
 
   return objects;
 }
@@ -127,10 +145,13 @@ hittable_list two_spheres() {
 hittable_list random_scene() {
   hittable_list world;
 
-  // shared_ptr<material> ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-  // world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
-  auto checker = make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
-  world.add(make_shared<sphere>(point3(0,-100,0), 100, make_shared<lambertian>(checker)));
+  // shared_ptr<material> ground_material = make_shared<lambertian>(color(0.5,
+  // 0.5, 0.5)); world.add(make_shared<sphere>(point3(0,-1000,0), 1000,
+  // ground_material));
+  auto checker =
+      make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
+  world.add(make_shared<sphere>(
+      point3(0, -100, 0), 100, make_shared<lambertian>(checker)));
 
   for (int a = -3; a < 3; a++) {
     for (int b = -3; b < 3; b++) {
@@ -144,7 +165,8 @@ hittable_list random_scene() {
           vec3 albedo = color::random() * color::random();
           sphere_material = make_shared<lambertian>(albedo);
           auto center2 = center + vec3(0, random_double(0, 0.5), 0);
-          world.add(make_shared<moving_sphere>(center, center2, 0.0, 1.0, 0.2, sphere_material));
+          world.add(make_shared<moving_sphere>(
+              center, center2, 0.0, 1.0, 0.2, sphere_material));
         } else if (choose_mat < 0.95) {
           vec3 albedo = color::random(0.5, 1);
           double fuzz = random_double(0, 0.5);
@@ -174,8 +196,10 @@ hittable_list two_perlin_spheres() {
   hittable_list objects;
 
   auto pertext = make_shared<noise_texture>(4);
-  objects.add(make_shared<sphere>(point3(0,-100,0), 100, make_shared<lambertian>(pertext)));
-  objects.add(make_shared<sphere>(point3(0, 1, 0), 1, make_shared<lambertian>(pertext)));
+  objects.add(make_shared<sphere>(
+      point3(0, -100, 0), 100, make_shared<lambertian>(pertext)));
+  objects.add(make_shared<sphere>(
+      point3(0, 1, 0), 1, make_shared<lambertian>(pertext)));
 
   return objects;
 }
@@ -189,22 +213,24 @@ hittable_list two_perlin_spheres() {
 // }
 
 hittable_list simple_light() {
-    hittable_list objects;
+  hittable_list objects;
 
-    auto pertext = make_shared<noise_texture>(4);
-    objects.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(pertext)));
-    objects.add(make_shared<sphere>(point3(0,2,0), 2, make_shared<lambertian>(pertext)));
+  auto pertext = make_shared<noise_texture>(4);
+  objects.add(make_shared<sphere>(
+      point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+  objects.add(make_shared<sphere>(
+      point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
 
-    auto difflight = make_shared<diffuse_light>(color(4,4,4));
-    objects.add(make_shared<xy_rect>(3, 5, 1, 3, -2, difflight));
+  auto difflight = make_shared<diffuse_light>(color(4, 4, 4));
+  objects.add(make_shared<xy_rect>(3, 5, 1, 3, -2, difflight));
 
-    return objects;
+  return objects;
 }
 
 hittable_list cornell_box() {
   hittable_list objects;
 
-  auto red   = make_shared<lambertian>(color(.65, .05, .05));
+  auto red = make_shared<lambertian>(color(.65, .05, .05));
   auto white = make_shared<lambertian>(color(.73, .73, .73));
   auto green = make_shared<lambertian>(color(.12, .45, .15));
   auto light = make_shared<diffuse_light>(color(7, 7, 7));
@@ -216,14 +242,15 @@ hittable_list cornell_box() {
   objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
   objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-  shared_ptr<hittable> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), white);
+  shared_ptr<hittable> box1 =
+      make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
   box1 = make_shared<rotate_y>(box1, 15);
-  box1 = make_shared<translate>(box1, vec3(265,0,295));
+  box1 = make_shared<translate>(box1, vec3(265, 0, 295));
 
-  shared_ptr<hittable> box2 = make_shared<box>(point3(0,0,0), point3(165,165,165), white);
+  shared_ptr<hittable> box2 =
+      make_shared<box>(point3(0, 0, 0), point3(165, 165, 165), white);
   box2 = make_shared<rotate_y>(box2, -18);
-  box2 = make_shared<translate>(box2, vec3(130,0,65));
-
+  box2 = make_shared<translate>(box2, vec3(130, 0, 65));
 
   objects.add(box1);
   objects.add(box2);
@@ -234,7 +261,7 @@ hittable_list cornell_box() {
 hittable_list cornell_smoke() {
   hittable_list objects;
 
-  auto red   = make_shared<lambertian>(color(.65, .05, .05));
+  auto red = make_shared<lambertian>(color(.65, .05, .05));
   auto white = make_shared<lambertian>(color(.73, .73, .73));
   auto green = make_shared<lambertian>(color(.12, .45, .15));
   auto light = make_shared<diffuse_light>(color(7, 7, 7));
@@ -246,16 +273,18 @@ hittable_list cornell_smoke() {
   objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
   objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-  shared_ptr<hittable> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), white);
+  shared_ptr<hittable> box1 =
+      make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
   box1 = make_shared<rotate_y>(box1, 15);
-  box1 = make_shared<translate>(box1, vec3(265,0,295));
+  box1 = make_shared<translate>(box1, vec3(265, 0, 295));
 
-  shared_ptr<hittable> box2 = make_shared<box>(point3(0,0,0), point3(165,165,165), white);
+  shared_ptr<hittable> box2 =
+      make_shared<box>(point3(0, 0, 0), point3(165, 165, 165), white);
   box2 = make_shared<rotate_y>(box2, -18);
-  box2 = make_shared<translate>(box2, vec3(130,0,65));
+  box2 = make_shared<translate>(box2, vec3(130, 0, 65));
 
-  objects.add(make_shared<constant_medium>(box1, 0.01, color(0,0,0)));
-  objects.add(make_shared<constant_medium>(box2, 0.01, color(1,1,1)));
+  objects.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
+  objects.add(make_shared<constant_medium>(box2, 0.01, color(1, 1, 1)));
 
   return objects;
 }
