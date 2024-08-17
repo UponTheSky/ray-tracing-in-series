@@ -1,4 +1,6 @@
-use std::io::{self, Write, BufWriter};
+use std::io::{self, BufWriter, Write};
+
+mod vec3;
 
 const IMAGE_WIDTH: u32 = 256;
 const IMAGE_HEIGHT: u32 = 256;
@@ -7,7 +9,7 @@ fn main() -> std::io::Result<()> {
     let mut stdout = BufWriter::new(io::stdout().lock());
     let mut stderr = BufWriter::new(io::stderr().lock());
 
-    stdout.write(b"P3\n")?;    
+    stdout.write(b"P3\n")?;
     stdout.write((format!("{IMAGE_WIDTH} {IMAGE_HEIGHT}\n255\n")).as_bytes())?;
 
     for j in 0..IMAGE_HEIGHT {
