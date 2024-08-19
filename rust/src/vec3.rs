@@ -1,5 +1,78 @@
-#[derive(Clone, Debug)]
+use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, MulAssign, Neg};
+use std::fmt::Display;
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct Vector3(f64, f64, f64);
+
+impl Add for Vector3 {
+    type Output = Vector3;
+
+    fn add(self, other: Vector3) -> Vector3 {
+        Vector3(self.0 + other.0, self.1 + other.1, self.2 + other.2)
+    }
+}
+
+impl AddAssign for Vector3 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+        self.1 += rhs.1;
+        self.2 += rhs.2;
+    }
+}
+
+impl Sub for Vector3 {
+    type Output = Vector3;
+
+    fn sub(self, other: Vector3) -> Vector3 {
+        Vector3(self.0 - other.0, self.1 - other.1, self.2 - other.2)
+    }
+}
+
+impl SubAssign for Vector3 {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
+        self.1 -= rhs.1;
+        self.2 -= rhs.2;
+    }
+}
+
+impl Mul<f64> for Vector3 {
+    type Output = Vector3;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+       Vector3(self.0 * rhs, self.1 * rhs, self.2 * rhs) 
+    }
+}
+
+impl Mul<Vector3> for f64 {
+    type Output = Vector3;
+
+    fn mul(self, rhs: Vector3) -> Self::Output {
+       Vector3(self * rhs.0, self * rhs.1, self * rhs.2) 
+    }
+}
+
+impl MulAssign<f64> for Vector3 {
+    fn mul_assign(&mut self, rhs: f64) {
+        self.0 *= rhs;
+        self.1 *= rhs;
+        self.2 *= rhs;
+    }
+}
+
+impl Neg for Vector3 {
+    type Output = Vector3;
+
+    fn neg(self) -> Self::Output {
+        Vector3(-self.0, -self.1, -self.2)
+    }
+}
+
+impl Display for Vector3 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.0, self.1, self.2)
+    }
+}
 
 impl Vector3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -22,22 +95,6 @@ impl Vector3 {
         self.2
     }
 
-    pub fn opposite(&self) -> Self {
-        Self::new(-self.0, -self.1, -self.2)
-    }
-
-    pub fn add(&mut self, other: &Self) {
-        self.0 += other.0;
-        self.1 += other.1;
-        self.2 += other.2;
-    }
-
-    pub fn scalar_multiply(&mut self, scalar: f64) {
-        self.0 *= scalar;
-        self.1 *= scalar;
-        self.2 *= scalar;
-    }
-
     pub fn length(&self) -> f64 {
         f64::sqrt(self.length_squared())
     }
@@ -55,39 +112,28 @@ impl Vector3 {
 
         let mut clone = self.clone();
 
-        clone.scalar_multiply(1.0 / clone.length());
+        clone *= (1.0 / clone.length());
 
         Ok(clone)
     }
 }
 
-pub fn add(v1: &Vector3, v2: &Vector3) -> Vector3 {
-    Vector3(v1.x() + v2.x(), v1.y() + v2.y(), v1.z() + v2.z())
-}
-
-pub fn subtract(v1: &Vector3, v2: &Vector3) -> Vector3 {
-    Vector3(v1.x() - v2.x(), v1.y() - v2.y(), v1.z() - v2.z())
-}
 
 pub fn dot(v1: &Vector3, v2: &Vector3) -> f64 {
-    v1.x() * v2.x() + v1.y() + v2.y() + v1.z() + v2.z()
+    v1.0 * v2.0 + v1.1 * v2.1 + v1.2 * v2.2
 }
 
 pub fn cross(v1: &Vector3, v2: &Vector3) -> Vector3 {
     Vector3(
-        v1.y() * v2.z() - v2.y() * v1.z(),
-        v1.z() * v2.x() - v1.x() * v2.z(),
-        v1.x() * v2.y() - v2.x() * v1.y(),
+        v1.1 * v2.2 - v2.1 * v1.2,
+        v1.2 * v2.0 - v1.0 * v2.2,
+        v1.0 * v2.1 - v2.0 * v1.1,
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn is_vec3_equal(v1: &Vector3, v2: &Vector3) -> bool {
-        v1.x() == v2.x() && v1.y() == v2.y() && v1.z() == v2.z()
-    }
 
     #[test]
     fn coordinate_correctly() {
@@ -99,55 +145,6 @@ mod tests {
         assert_eq!(vec.x(), x);
         assert_eq!(vec.y(), y);
         assert_eq!(vec.z(), z);
-    }
-
-    #[test]
-    fn opposite_correctly() {
-        let x = 1.0;
-        let y = 2.0;
-        let z = 3.0;
-
-        let vec = Vector3::new(x, y, z);
-        let vec_opposite = vec.opposite();
-        let vec_expected = Vector3::new(-x, -y, -z);
-
-        assert!(
-            is_vec3_equal(&vec_opposite, &vec_expected),
-            "result {:?} is different from expected {:?}",
-            &vec_opposite,
-            &vec_expected
-        );
-    }
-
-    #[test]
-    fn add_correctly() {
-        let mut vec = Vector3::new(1.0, 2.0, 3.0);
-        let vec_added = Vector3::new(4.0, 5.0, 6.0);
-        let vec_expected = Vector3::new(5.0, 7.0, 9.0);
-
-        vec.add(&vec_added);
-
-        assert!(
-            is_vec3_equal(&vec, &vec_expected),
-            "result {:?} is different from expected {:?}",
-            &vec,
-            &vec_expected
-        );
-    }
-
-    #[test]
-    fn scalar_multiply_correctly() {
-        let mut vec = Vector3::new(1.0, 2.0, 3.0);
-        let vec_expected = Vector3::new(2.0, 4.0, 6.0);
-
-        vec.scalar_multiply(2.0);
-
-        assert!(
-            is_vec3_equal(&vec, &vec_expected),
-            "result {:?} is different from expected {:?}",
-            &vec,
-            &vec_expected
-        );
     }
 
     #[test]
@@ -172,5 +169,21 @@ mod tests {
             f64::abs(normalized.length() - 1.0) < 0.00005,
             "normalization is not correct"
         );
+    }
+
+    #[test]
+    fn dot() {
+        let v1 = Vector3::new(1.0, 2.0, 3.0);
+        let v2 = Vector3::new(2.0, 3.0, 4.0);
+
+        assert_eq!(super::dot(&v1, &v2), 20.0);
+    }
+
+    #[test]
+    fn cross() {
+        let v1 = Vector3::new(1.0, 2.0, 3.0);
+        let v2 = Vector3::new(2.0, 3.0, 4.0);
+
+        assert_eq!(super::cross(&v1, &v2), Vector3::new(-1.0, 2.0, -1.0));
     }
 }
