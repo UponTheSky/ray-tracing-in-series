@@ -1,6 +1,8 @@
-use std::io::{self, BufWriter, Write};
-
 mod vec3;
+mod color;
+
+use std::io::{self, BufWriter, Write};
+use color::{Color, write_color};
 
 const IMAGE_WIDTH: u32 = 256;
 const IMAGE_HEIGHT: u32 = 256;
@@ -16,15 +18,9 @@ fn main() -> std::io::Result<()> {
         for i in 0..IMAGE_WIDTH {
             stderr.write(format!("\rScanlines remaining: {} ", IMAGE_HEIGHT - j).as_bytes())?;
             stderr.flush()?;
-            let r = (i as f32) / ((IMAGE_WIDTH - 1) as f32);
-            let g = (j as f32) / ((IMAGE_HEIGHT - 1) as f32);
-            let b: f32 = 0.0;
 
-            let ir: i32 = (255.999 * r) as i32;
-            let ig: i32 = (255.999 * g) as i32;
-            let ib: i32 = (255.999 * b) as i32;
-
-            stdout.write(format!("{ir} {ig} {ib}\n").as_bytes())?;
+            let color = Color::new((i as f64) / ((IMAGE_WIDTH - 1) as f64), (j as f64) / ((IMAGE_HEIGHT - 1) as f64), 0.0);
+            write_color(&mut stdout, &color)?;
         }
     }
 
