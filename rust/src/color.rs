@@ -1,10 +1,12 @@
-use std::io::{Write, Result};
 use crate::vec3::Vector3;
+use std::io::Write;
 
 pub type Color = Vector3;
 
-pub fn write_color<W>(out: &mut W, pixel_color: &Color) -> std::io::Result<()> 
-where W: Write {
+pub fn write_color<W>(out: &mut W, pixel_color: &Color) -> std::io::Result<()>
+where
+    W: Write,
+{
     let r = pixel_color.x();
     let g = pixel_color.y();
     let b = pixel_color.z();

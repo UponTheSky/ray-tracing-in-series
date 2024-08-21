@@ -1,7 +1,7 @@
-use std::ops::{Add, Sub, AddAssign, SubAssign, Mul, MulAssign, Neg};
 use std::fmt::Display;
+use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vector3(f64, f64, f64);
 
 impl Add for Vector3 {
@@ -40,7 +40,7 @@ impl Mul<f64> for Vector3 {
     type Output = Vector3;
 
     fn mul(self, rhs: f64) -> Self::Output {
-       Vector3(self.0 * rhs, self.1 * rhs, self.2 * rhs) 
+        Vector3(self.0 * rhs, self.1 * rhs, self.2 * rhs)
     }
 }
 
@@ -48,7 +48,7 @@ impl Mul<Vector3> for f64 {
     type Output = Vector3;
 
     fn mul(self, rhs: Vector3) -> Self::Output {
-       Vector3(self * rhs.0, self * rhs.1, self * rhs.2) 
+        Vector3(self * rhs.0, self * rhs.1, self * rhs.2)
     }
 }
 
@@ -118,7 +118,6 @@ impl Vector3 {
     }
 }
 
-
 pub fn dot(v1: &Vector3, v2: &Vector3) -> f64 {
     v1.0 * v2.0 + v1.1 * v2.1 + v1.2 * v2.2
 }
@@ -163,7 +162,7 @@ mod tests {
     #[test]
     fn normalize_correctly() {
         let vec = Vector3::new(1.0, 2.0, 3.0);
-        let normalized = vec.normalize().unwrap(); 
+        let normalized = vec.normalize().unwrap();
 
         assert!(
             f64::abs(normalized.length() - 1.0) < 0.00005,
