@@ -2,6 +2,7 @@ mod color;
 mod point;
 mod ray;
 mod vec3;
+mod geometry;
 
 use color::{write_color, Color};
 use ray::Ray;
@@ -18,9 +19,16 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const VIEWPORT_HEIGHT: f64 = 2.0;
 const FOCAL_LENGTH: f64 = 1.0;
 
-fn ray_color(ray: &Ray) -> Color {
-    // we're sure the ray is not a zero vector, so we unwrap()
+pub fn ray_color(ray: &Ray) -> Color {
+    let t = geometry::hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &ray); 
+
+    if t > 0.0 {
+        let norm_vector = ray.at(t) - Point3::new(0.0, 0.0, -1.0);
+        return 0.5 * Color::new(norm_vector.x() + 1.0, norm_vector.y() + 1.0, norm_vector.z() + 1.0);
+    }
+
     let unit_direction = ray.direction().normalize().unwrap();
+
     let a = 0.5 * (unit_direction.y() + 1.0);
 
     (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
