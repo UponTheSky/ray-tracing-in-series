@@ -112,7 +112,7 @@ impl Vector3 {
 
         let mut clone = self.clone();
 
-        clone *= (1.0 / clone.length());
+        clone *= 1.0 / clone.length();
 
         Ok(clone)
     }

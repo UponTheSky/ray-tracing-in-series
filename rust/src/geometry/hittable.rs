@@ -41,7 +41,7 @@ pub trait Hittable {
     fn hit(&self, ray: &Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool;
 }
 
-struct HittableList {
+pub struct HittableList {
     pub objects: Vec<Rc<dyn Hittable>>, // REMARK: only for single threaded runtime
 }
 
@@ -65,16 +65,19 @@ impl HittableList {
 impl Hittable for HittableList {
     fn hit(&self, ray: &Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool {
         let mut temp_rec = HitRecord::new();
-        let mut hit_anything = true;
+        let mut hit_anything = false;
         let mut closest_so_far = ray_tmax;
 
         self.objects.iter().for_each(|object|{
             if object.hit(ray, ray_tmin, closest_so_far, &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
-                *rec = temp_rec;
             }
         });
+
+        if hit_anything {
+            *rec = temp_rec;
+        }
 
         hit_anything
     }
