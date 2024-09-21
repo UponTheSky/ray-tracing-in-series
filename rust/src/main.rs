@@ -4,87 +4,28 @@ mod ray;
 mod vec3;
 mod geometry;
 mod util;
+mod camera;
 
-use color::{write_color, Color};
 use geometry::sphere::Sphere;
-use ray::Ray;
 use point::Point3;
-use std::cmp::max;
-use std::io::{self, BufWriter, Write};
-use vec3::Vector3;
-use geometry::hittable::{HitRecord, Hittable, HittableList};
-use util::{interval::Interval, INFINITY};
-
-// image
-const IMAGE_WIDTH: u32 = 400;
-const ASPECT_RATIO: f64 = 16.0 / 9.0;
-
-// camera
-const VIEWPORT_HEIGHT: f64 = 2.0;
-const FOCAL_LENGTH: f64 = 1.0;
-
-pub fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color {
-    let mut rec = HitRecord::new();
-
-    if world.hit(ray, Interval::new(0.0, INFINITY), &mut rec) {
-        return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
-    } 
-
-    let unit_direction = ray.direction().normalize().unwrap();
-    let alpha = 0.5 * (unit_direction.y() + 1.0); 
-
-    (1.0 - alpha) * Color::new(1.0, 1.0, 1.0) + alpha * Color::new(0.5, 0.7, 1.0)
-}
+use geometry::hittable::{HittableList};
 
 fn main() -> std::io::Result<()> {
-    let mut stdout = BufWriter::new(io::stdout().lock());
-    let mut stderr = BufWriter::new(io::stderr().lock());
-
-    // image height
-    let mut image_height = ((IMAGE_WIDTH as f64) / ASPECT_RATIO) as u32;
-    image_height = max(image_height, 1);
-    
     // world
     let mut world = HittableList::new();
     world.add(std::rc::Rc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5)));
     world.add(std::rc::Rc::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // camera
-    let viewport_width = VIEWPORT_HEIGHT * ((IMAGE_WIDTH as f64) / (image_height as f64));
-    let camera_center = Point3::new_default();
-    let viewport_u = Vector3::new(viewport_width, 0.0, 0.0);
-    let viewport_v = Vector3::new(0.0, -VIEWPORT_HEIGHT, 0.0);
+    let camera = camera::Builder::new()
+        .set_image_width(400)
+        .set_image_aspect_ratio(16.0 / 9.0)
+        .set_center(&Point3::new_default())
+        .set_viewport_height(2.0)
+        .set_focal_length(1.0)
+        .build();
 
-    let pixel_delta_u = viewport_u * (1.0 / (IMAGE_WIDTH as f64));
-    let pixel_delta_v = viewport_v * (1.0 / (image_height as f64));
-
-    let viewport_upper_left = camera_center
-        - Vector3::new(0.0, 0.0, FOCAL_LENGTH)
-        - (viewport_u * 0.5)
-        - (viewport_v * 0.5);
-
-    let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v); 
-
-    stdout.write(b"P3\n")?;
-    stdout.write((format!("{IMAGE_WIDTH} {image_height}\n255\n")).as_bytes())?;
-
-    for j in 0..image_height {
-        for i in 0..IMAGE_WIDTH {
-            stderr.write(format!("\rScanlines remaining: {} ", image_height - j).as_bytes())?;
-            stderr.flush()?;
-
-            let pixel_center = pixel00_loc + ((i as f64) * pixel_delta_u) + ((j as f64) * pixel_delta_v);
-            let ray_direction = pixel_center - camera_center;
-            let ray = Ray::new(&camera_center, &ray_direction);
-
-            let pixel_color = ray_color(&ray, &world);
-            write_color(&mut stdout, &pixel_color)?;
-        }
-    }
-
-    stderr.write("\rDone.                 \n".as_bytes())?;
-    stderr.flush()?;
-    stdout.flush()?;
+    camera.render(&world)?;
 
     Ok(())
 }
