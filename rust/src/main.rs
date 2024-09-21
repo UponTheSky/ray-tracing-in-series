@@ -13,6 +13,7 @@ use std::cmp::max;
 use std::io::{self, BufWriter, Write};
 use vec3::Vector3;
 use geometry::hittable::{HitRecord, Hittable, HittableList};
+use util::{interval::Interval, INFINITY};
 
 // image
 const IMAGE_WIDTH: u32 = 400;
@@ -25,7 +26,7 @@ const FOCAL_LENGTH: f64 = 1.0;
 pub fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color {
     let mut rec = HitRecord::new();
 
-    if world.hit(ray, 0.0, util::INFINITY, &mut rec) {
+    if world.hit(ray, Interval::new(0.0, INFINITY), &mut rec) {
         return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
     } 
 
