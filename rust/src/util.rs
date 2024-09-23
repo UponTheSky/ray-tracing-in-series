@@ -1,3 +1,5 @@
+use rand::Rng;
+
 // constants
 pub const INFINITY: f64 = std::f64::INFINITY; 
 pub const NEG_INFINITY: f64 = std::f64::NEG_INFINITY;
@@ -6,6 +8,16 @@ pub const PI: f64 = std::f64::consts::PI;
 #[inline]
 pub fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
+}
+
+#[inline]
+pub fn random_double() -> f64 {
+    rand::thread_rng().gen_range(0.0..1.0)
+}
+
+#[inline]
+pub fn random_double_in_range(min: f64, max: f64) -> f64 {
+    rand::thread_rng().gen_range(min..max)
 }
 
 pub mod interval {
@@ -36,6 +48,16 @@ pub mod interval {
 
         pub fn surrounds(&self, x: f64) -> bool {
             self.min < x && x < self.max
+        }
+
+        pub fn clamps(&self, x: f64) -> f64 {
+            if x < self.min {
+                self.min
+            } else if x > self.max {
+                self.max
+            } else {
+                x
+            }
         }
     }
 

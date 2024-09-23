@@ -23,6 +23,7 @@ fn main() -> std::io::Result<()> {
         .set_center(&Point3::new_default())
         .set_viewport_height(2.0)
         .set_focal_length(1.0)
+        .set_samples_per_pixel(100)
         .build();
 
     camera.render(&world)?;

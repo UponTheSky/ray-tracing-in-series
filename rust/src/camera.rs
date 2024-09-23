@@ -3,6 +3,7 @@ use std::io::{self, BufWriter, Write};
 use crate::point::Point3;
 use crate::ray::Ray;
 use crate::geometry::hittable::{Hittable, HitRecord};
+use crate::util::random_double;
 use crate::util::{INFINITY, interval::Interval};
 use crate::color::{write_color, Color};
 
@@ -17,6 +18,9 @@ pub struct Builder {
     // viewport
     viewport_height: f64,
     focal_length: f64,
+
+    // samples per pixel
+    samples_per_pixel: u32,
 }
 
 impl Builder {
@@ -27,6 +31,7 @@ impl Builder {
             viewport_height: 0.0,
             focal_length: 0.0,
             center: Point3::new_default(),
+            samples_per_pixel: 0,
         }
     }
     pub fn set_image_width(&mut self, width: u32) -> &mut Self {
@@ -51,6 +56,11 @@ impl Builder {
 
     pub fn set_center(&mut self, center: &Point3) -> &mut Self {
         self.center = center.clone();
+        self
+    }
+
+    pub fn set_samples_per_pixel(&mut self, samples_per_pixel: u32) -> &mut Self {
+        self.samples_per_pixel = samples_per_pixel;
         self
     }
 
@@ -81,7 +91,8 @@ impl Builder {
             pixel_delta_u,
             pixel_delta_v,
             pixel00_loc,
-            center
+            center,
+            samples_per_pixel: self.samples_per_pixel,
         }
     }
 }
@@ -97,7 +108,10 @@ pub struct Camera {
     pixel00_loc: Point3,
 
     // center
-    center: Point3
+    center: Point3,
+
+    // sampling
+    samples_per_pixel: u32,
 }
 
 
@@ -114,12 +128,14 @@ impl Camera {
                 stderr.write(format!("\rScanlines remaining: {} ", self.image_height - j).as_bytes())?;
                 stderr.flush()?;
 
-                let pixel_center = self.pixel00_loc + ((i as f64) * self.pixel_delta_u) + ((j as f64) * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.center;
-                let ray = Ray::new(&self.center, &ray_direction);
+                let mut pixel_color = Color::new_default();
 
-                let pixel_color = Self::ray_color(&ray, world);
-                write_color(&mut stdout, &pixel_color)?;
+                for _ in 0..self.samples_per_pixel {
+                    let ray = self.get_ray(i, j);
+                    pixel_color += Self::ray_color(&ray, world);
+                }
+
+                write_color(&mut stdout, &(pixel_color * (1.0 / self.samples_per_pixel as f64)))?;
             }
         }
 
@@ -128,6 +144,15 @@ impl Camera {
         stdout.flush()?;
 
         Ok(())
+    }
+
+    fn get_ray(&self, i: u32, j: u32) -> Ray {
+        let offset = Point3::new(random_double() - 0.5, random_double() - 0.5, 0.0);
+        let pixel_sample = self.pixel00_loc + ((i as f64) + offset.x()) * self.pixel_delta_u + ((j as f64) + offset.y()) * self.pixel_delta_v;
+
+        let ray_direction = pixel_sample - self.center;
+
+        Ray::new(&self.center, &ray_direction)
     }
 
 
