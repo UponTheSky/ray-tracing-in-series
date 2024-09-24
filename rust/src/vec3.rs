@@ -1,6 +1,8 @@
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
+use crate::util;
+
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vector3(f64, f64, f64);
 
@@ -106,7 +108,7 @@ impl Vector3 {
     pub fn normalize(&self) -> Result<Self, &'static str> {
         let length = self.length_squared();
 
-        if length < 0.0005 {
+        if length < 1e-170 {
             return Err("The vector is not normalizable: the length is too short");
         }
 
@@ -118,10 +120,12 @@ impl Vector3 {
     }
 }
 
+#[inline]
 pub fn dot(v1: &Vector3, v2: &Vector3) -> f64 {
     v1.0 * v2.0 + v1.1 * v2.1 + v1.2 * v2.2
 }
 
+#[inline]
 pub fn cross(v1: &Vector3, v2: &Vector3) -> Vector3 {
     Vector3(
         v1.1 * v2.2 - v2.1 * v1.2,
@@ -129,6 +133,53 @@ pub fn cross(v1: &Vector3, v2: &Vector3) -> Vector3 {
         v1.0 * v2.1 - v2.0 * v1.1,
     )
 }
+
+#[inline]
+pub fn random() -> Vector3 {
+    Vector3::new(
+        util::random_double(),
+        util::random_double(),
+        util::random_double()
+    )
+}
+
+#[inline]
+pub fn random_in_range(min: f64, max: f64) -> Vector3 {
+    Vector3::new(
+        util::random_double_in_range(min, max),
+        util::random_double_in_range(min, max),
+        util::random_double_in_range(min, max),
+    )
+} 
+
+#[inline]
+fn random_unit_vector() -> Vector3 {
+    let mut p: Vector3;
+
+    loop {
+        p = random_in_range(-1.0, 1.0);
+
+        if p.length_squared() < 1e-160 {
+            continue
+        }
+
+        break
+    }
+
+    p.normalize().unwrap()
+}
+
+#[inline]
+pub fn random_on_hemisphere(normal: &Vector3) -> Vector3 {
+    let random_vec = random_unit_vector();
+
+    if dot(&random_vec, normal) > 0.0 {
+        random_vec 
+    } else {
+        -random_vec
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

@@ -6,6 +6,7 @@ use crate::geometry::hittable::{Hittable, HitRecord};
 use crate::util::random_double;
 use crate::util::{INFINITY, interval::Interval};
 use crate::color::{write_color, Color};
+use crate::vec3::random_on_hemisphere;
 
 pub struct Builder {
     // image
@@ -160,7 +161,8 @@ impl Camera {
         let mut rec = HitRecord::new();
 
         if world.hit(ray, Interval::new(0.0, INFINITY), &mut rec) {
-            return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
+            let diffuse_dir = random_on_hemisphere(&rec.normal);
+            return 0.5 * Camera::ray_color(&Ray::new(&rec.p, &diffuse_dir), world);
         } 
 
         let unit_direction = ray.direction().normalize().unwrap();
