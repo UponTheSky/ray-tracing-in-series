@@ -8,7 +8,7 @@ mod camera;
 
 use geometry::sphere::Sphere;
 use point::Point3;
-use geometry::hittable::{HittableList};
+use geometry::hittable::HittableList;
 
 fn main() -> std::io::Result<()> {
     // world
@@ -24,6 +24,7 @@ fn main() -> std::io::Result<()> {
         .set_viewport_height(2.0)
         .set_focal_length(1.0)
         .set_samples_per_pixel(100)
+        .set_max_depth(50)
         .build();
 
     camera.render(&world)?;

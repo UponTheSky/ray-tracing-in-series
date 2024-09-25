@@ -6,7 +6,7 @@ use crate::geometry::hittable::{Hittable, HitRecord};
 use crate::util::random_double;
 use crate::util::{INFINITY, interval::Interval};
 use crate::color::{write_color, Color};
-use crate::vec3::random_on_hemisphere;
+use crate::vec3::random;
 
 pub struct Builder {
     // image
@@ -20,8 +20,9 @@ pub struct Builder {
     viewport_height: f64,
     focal_length: f64,
 
-    // samples per pixel
+    // samples
     samples_per_pixel: u32,
+    max_depth: u32,
 }
 
 impl Builder {
@@ -33,6 +34,7 @@ impl Builder {
             focal_length: 0.0,
             center: Point3::new_default(),
             samples_per_pixel: 0,
+            max_depth: 0,
         }
     }
     pub fn set_image_width(&mut self, width: u32) -> &mut Self {
@@ -65,6 +67,11 @@ impl Builder {
         self
     }
 
+    pub fn set_max_depth(&mut self, max_depth: u32) -> &mut Self {
+        self.max_depth = max_depth;
+        self
+    }
+
     pub fn build(&self) -> Camera {
         // image
         let mut image_height = ((self.image_width as f64) / self.image_aspect_ratio) as u32;
@@ -94,6 +101,7 @@ impl Builder {
             pixel00_loc,
             center,
             samples_per_pixel: self.samples_per_pixel,
+            max_depth: self.max_depth,
         }
     }
 }
@@ -113,6 +121,7 @@ pub struct Camera {
 
     // sampling
     samples_per_pixel: u32,
+    max_depth: u32
 }
 
 
@@ -133,7 +142,7 @@ impl Camera {
 
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&ray, world);
+                    pixel_color += Self::ray_color(&ray, self.max_depth, world);
                 }
 
                 write_color(&mut stdout, &(pixel_color * (1.0 / self.samples_per_pixel as f64)))?;
@@ -156,13 +165,16 @@ impl Camera {
         Ray::new(&self.center, &ray_direction)
     }
 
+    fn ray_color(ray: &Ray, depth: u32, world: &dyn Hittable) -> Color {
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
 
-    fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color {
         let mut rec = HitRecord::new();
 
         if world.hit(ray, Interval::new(0.0, INFINITY), &mut rec) {
-            let diffuse_dir = random_on_hemisphere(&rec.normal);
-            return 0.5 * Camera::ray_color(&Ray::new(&rec.p, &diffuse_dir), world);
+            let diffuse_dir = rec.normal + random().normalize().unwrap();
+            return 0.5 * Camera::ray_color(&Ray::new(&rec.p, &diffuse_dir), depth-1, world);
         } 
 
         let unit_direction = ray.direction().normalize().unwrap();
