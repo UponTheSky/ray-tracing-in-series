@@ -5,6 +5,7 @@ mod vec3;
 mod geometry;
 mod util;
 mod camera;
+mod material;
 
 use geometry::sphere::Sphere;
 use point::Point3;
