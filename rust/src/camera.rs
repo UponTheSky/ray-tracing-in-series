@@ -172,9 +172,16 @@ impl Camera {
 
         let mut rec = HitRecord::new();
 
-        if world.hit(ray, Interval::new(0.0, INFINITY), &mut rec) {
-            let diffuse_dir = rec.normal + random().normalize().unwrap();
-            return 0.5 * Camera::ray_color(&Ray::new(&rec.p, &diffuse_dir), depth-1, world);
+        if world.hit(ray, Interval::new(0.001, INFINITY), &mut rec) {
+            let mut scattered: Ray;
+            let mut attenuation: Color; 
+
+            if rec.mat.unwrap().scatter(ray, &rec, &mut attenuation, &mut scattered) {
+                return attenuation * Camera::ray_color(&scattered, depth-1, world);
+            } else {
+                return Color::new(0.0, 0.0, 0.0);
+            }
+
         } 
 
         let unit_direction = ray.direction().normalize().unwrap();

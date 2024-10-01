@@ -54,6 +54,14 @@ impl Mul<Vector3> for f64 {
     }
 }
 
+impl Mul<Vector3> for Vector3 {
+    type Output = Vector3;
+
+    fn mul(self, rhs: Vector3) -> Self::Output {
+        Vector3(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2)
+    }
+}
+
 impl MulAssign<f64> for Vector3 {
     fn mul_assign(&mut self, rhs: f64) {
         self.0 *= rhs;
@@ -118,6 +126,12 @@ impl Vector3 {
 
         Ok(clone)
     }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+
+        f64::abs(self.0) < s && f64::abs(self.1) < s && f64::abs(self.2) < s
+    }
 }
 
 #[inline]
@@ -178,6 +192,11 @@ pub fn random_on_hemisphere(normal: &Vector3) -> Vector3 {
     } else {
         -random_vec
     }
+}
+
+#[inline]
+pub fn reflect(v: &Vector3, n: &Vector3) -> Vector3 {
+    v.clone() - 2.0 * dot(v, n) * n.clone()
 }
 
 

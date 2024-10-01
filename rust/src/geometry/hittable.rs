@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::point::Point3;
 use crate::util::interval::Interval;
@@ -8,6 +9,7 @@ use crate::vec3::{dot, Vector3};
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vector3,
+    pub mat: Option<Rc<dyn Material>>,
     pub t: f64,
     pub front_face: bool,
 }
@@ -18,6 +20,7 @@ impl HitRecord {
             p: Point3::new_default(),
             normal: Vector3::new_default(),
             t: 0.0,
+            mat: None,
             front_face: true,
         }
     }
@@ -35,6 +38,10 @@ impl HitRecord {
         };
 
         Ok(())
+    }
+
+    pub fn set_material(&mut self, material: &Rc<dyn Material>) {
+        self.mat = Some(Rc::clone(material));
     }
 }
 
