@@ -173,10 +173,11 @@ impl Camera {
         let mut rec = HitRecord::new();
 
         if world.hit(ray, Interval::new(0.001, INFINITY), &mut rec) {
-            let mut scattered: Ray;
-            let mut attenuation: Color; 
+            let mut scattered = Ray::new_default();
+            let mut attenuation = Color::new_default(); 
+            let material = rec.mat.clone();
 
-            if rec.mat.unwrap().scatter(ray, &rec, &mut attenuation, &mut scattered) {
+            if material.unwrap().scatter(ray, &rec, &mut attenuation, &mut scattered) {
                 return attenuation * Camera::ray_color(&scattered, depth-1, world);
             } else {
                 return Color::new(0.0, 0.0, 0.0);

@@ -53,7 +53,6 @@ impl Hittable for Sphere {
 
         let outward_normal = (rec.p - self.center) * (1.0 / self.radius);
         rec.set_face_normal(ray, &outward_normal).unwrap();
-        // TODO: re-read Rc part(with 100 exercises) and check this part again
         rec.set_material(&self.mat);
 
         return true;

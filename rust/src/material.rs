@@ -1,7 +1,7 @@
 use crate::color::Color;
 use crate::ray::Ray;
 use crate::geometry::hittable::HitRecord;
-use crate::vec3::{random, reflect, Vector3};
+use crate::vec3::{random, reflect, Vector3, dot};
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool;
@@ -12,14 +12,14 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
-    fn new(albedo: &Color) -> Self {
+    pub fn new(albedo: &Color) -> Self {
         Self { albedo: albedo.clone() }
     }
 }
 
 impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
-        let mut random_unit_vector: Vector3;
+        let mut random_unit_vector = Vector3::new_default();
 
         while let Ok(vector) = random().normalize() {
             random_unit_vector = vector;
@@ -40,22 +40,34 @@ impl Material for Lambertian {
 }
 
 pub struct Metal {
-    albedo: Color
+    albedo: Color,
+    fuzz: f64
 }
 
 impl Metal {
-    fn new(albedo: &Color) -> Self {
-        Self { albedo: albedo.clone() }
+    pub fn new(albedo: &Color, fuzz: f64) -> Self {
+        Self { 
+            albedo: albedo.clone(),
+            fuzz: f64::min(fuzz, 1.0)
+        }
     }
 }
 
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
-        let reflected = reflect(&r_in.direction(), &rec.normal);
+        let mut reflected = reflect(&r_in.direction(), &rec.normal);
+        let mut random_unit_vector = Vector3::new_default();
+
+        while let Ok(vec) = random().normalize() {
+            random_unit_vector = vec;
+            break;
+        } 
+
+        reflected = reflected.normalize().unwrap() + (self.fuzz * random_unit_vector);
 
         *scattered = Ray::new(&rec.p, &reflected);
         *attenuation = self.albedo.clone();
 
-        true
+        dot(scattered.direction(), &rec.normal) > 0.0
     }
 }
