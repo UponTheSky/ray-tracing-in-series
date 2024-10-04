@@ -10,7 +10,7 @@ mod material;
 use std::rc::Rc;
 use color::Color;
 use geometry::sphere::Sphere;
-use material::{Lambertian, Metal};
+use material::{Dielectric, Lambertian, Metal};
 use point::Point3;
 use geometry::hittable::HittableList;
 
@@ -21,7 +21,7 @@ fn main() -> std::io::Result<()> {
     // materials
     let material_ground = Rc::new(Lambertian::new(&Color::new(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::new(&Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Metal::new(&Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_left = Rc::new(Dielectric::new(1.50));
     let material_right = Rc::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 1.0));
 
 

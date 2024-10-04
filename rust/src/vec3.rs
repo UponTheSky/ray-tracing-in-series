@@ -199,6 +199,17 @@ pub fn reflect(v: &Vector3, n: &Vector3) -> Vector3 {
     v.clone() - 2.0 * dot(v, n) * n.clone()
 }
 
+#[inline]
+pub fn refract(uv: &Vector3, n: &Vector3, etai_over_etat: f64) -> Vector3 {
+    let uv_outward = -uv.clone();
+    let cos_theta = f64::min(dot(&uv_outward, n), 1.0);
+    let r_out_perp = etai_over_etat * (uv.clone() + cos_theta * n.clone());
+    let r_out_parallel = -f64::sqrt(f64::abs(1.0 - r_out_perp.length_squared())) * n.clone();
+
+    r_out_parallel + r_out_perp
+}
+
+
 
 #[cfg(test)]
 mod tests {
