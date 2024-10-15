@@ -3,7 +3,7 @@ use std::io::{self, BufWriter, Write};
 use crate::point::Point3;
 use crate::ray::Ray;
 use crate::geometry::hittable::{Hittable, HitRecord};
-use crate::util::random_double;
+use crate::util::{degrees_to_radians, random_double};
 use crate::util::{INFINITY, interval::Interval};
 use crate::color::{write_color, Color};
 use crate::vec3::random;
@@ -17,8 +17,8 @@ pub struct Builder {
     center: Point3,
 
     // viewport
-    viewport_height: f64,
     focal_length: f64,
+    vfov: f64,
 
     // samples
     samples_per_pixel: u32,
@@ -30,8 +30,8 @@ impl Builder {
         Self {
             image_width: 0,
             image_aspect_ratio: 0.0,
-            viewport_height: 0.0,
             focal_length: 0.0,
+            vfov: 0.0,
             center: Point3::new_default(),
             samples_per_pixel: 0,
             max_depth: 0,
@@ -47,8 +47,8 @@ impl Builder {
         self
     }
 
-    pub fn set_viewport_height(&mut self, height: f64) -> &mut Self {
-        self.viewport_height = height;
+    pub fn set_vfov(&mut self, vfov: f64) -> &mut Self {
+        self.vfov = vfov;
         self
     }
 
@@ -78,9 +78,12 @@ impl Builder {
         image_height = u32::max(image_height, 1);
 
         // viewport
-        let viewport_width = self.viewport_height * ((self.image_width as f64) / (image_height as f64));
+        let theta = degrees_to_radians(self.vfov);
+        let h = f64::tan(theta / 2.0);
+        let viewport_height = 2.0 * h * self.focal_length;
+        let viewport_width = viewport_height * ((self.image_width as f64) / (image_height as f64));
         let viewport_u = Point3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Point3::new(0.0, -self.viewport_height, 0.0);
+        let viewport_v = Point3::new(0.0, -viewport_height, 0.0);
 
         let pixel_delta_u = viewport_u * (1.0 / (self.image_width as f64));
         let pixel_delta_v = viewport_v * (1.0 / (image_height as f64));
@@ -121,7 +124,7 @@ pub struct Camera {
 
     // sampling
     samples_per_pixel: u32,
-    max_depth: u32
+    max_depth: u32,
 }
 
 
