@@ -6,19 +6,18 @@ use crate::geometry::hittable::{Hittable, HitRecord};
 use crate::util::{degrees_to_radians, random_double};
 use crate::util::{INFINITY, interval::Interval};
 use crate::color::{write_color, Color};
-use crate::vec3::random;
+use crate::vec3::{Vector3, cross};
 
 pub struct Builder {
     // image
     image_width: u32,
     image_aspect_ratio: f64, // width: height
 
-    // center
-    center: Point3,
-
     // viewport
-    focal_length: f64,
     vfov: f64,
+    lookfrom: Point3,
+    lookat: Point3,
+    vup: Vector3,
 
     // samples
     samples_per_pixel: u32,
@@ -30,9 +29,10 @@ impl Builder {
         Self {
             image_width: 0,
             image_aspect_ratio: 0.0,
-            focal_length: 0.0,
             vfov: 0.0,
-            center: Point3::new_default(),
+            lookfrom: Point3::new_default(),
+            lookat: Point3::new_default(),
+            vup: Vector3::new_default(),
             samples_per_pixel: 0,
             max_depth: 0,
         }
@@ -52,16 +52,6 @@ impl Builder {
         self
     }
 
-    pub fn set_focal_length(&mut self, focal_length: f64) -> &mut Self {
-        self.focal_length = focal_length;
-        self 
-    }
-
-    pub fn set_center(&mut self, center: &Point3) -> &mut Self {
-        self.center = center.clone();
-        self
-    }
-
     pub fn set_samples_per_pixel(&mut self, samples_per_pixel: u32) -> &mut Self {
         self.samples_per_pixel = samples_per_pixel;
         self
@@ -72,25 +62,48 @@ impl Builder {
         self
     }
 
+    pub fn set_lookfrom(&mut self, lookfrom: &Point3) -> &mut Self {
+        self.lookfrom = lookfrom.clone();
+        self
+    }
+
+    pub fn set_lookat(&mut self, lookat: &Point3) -> &mut Self {
+        self.lookat = lookat.clone();
+        self
+    }
+
+    pub fn set_vup(&mut self, vup: &Vector3) -> &mut Self {
+        self.vup = vup.clone();
+        self
+    }
+
     pub fn build(&self) -> Camera {
         // image
         let mut image_height = ((self.image_width as f64) / self.image_aspect_ratio) as u32;
         image_height = u32::max(image_height, 1);
 
         // viewport
+        let vec_to_target = self.lookfrom - self.lookat;
+
+        let center = self.lookfrom; // world space
+        let focal_length = vec_to_target.length();
         let theta = degrees_to_radians(self.vfov);
         let h = f64::tan(theta / 2.0);
-        let viewport_height = 2.0 * h * self.focal_length;
+        let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * ((self.image_width as f64) / (image_height as f64));
-        let viewport_u = Point3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Point3::new(0.0, -viewport_height, 0.0);
+
+        let w = vec_to_target.normalize().unwrap();
+        let u = cross(&self.vup, &w).normalize().unwrap();
+        let v = cross(&w, &u);
+
+        let viewport_u = viewport_width * u;
+        let viewport_v = viewport_height * -v;
 
         let pixel_delta_u = viewport_u * (1.0 / (self.image_width as f64));
         let pixel_delta_v = viewport_v * (1.0 / (image_height as f64));
 
-        let center = Point3::new(0.0, 0.0, 0.0); // world space
-        let viewport_upper_left = self.center
-            - Point3::new(0.0, 0.0, self.focal_length) 
+        let viewport_upper_left = center
+            - (focal_length * w)
             - (viewport_u * 0.5)
             - (viewport_v * 0.5);
 
