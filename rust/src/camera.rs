@@ -6,7 +6,7 @@ use crate::geometry::hittable::{Hittable, HitRecord};
 use crate::util::{degrees_to_radians, random_double};
 use crate::util::{INFINITY, interval::Interval};
 use crate::color::{write_color, Color};
-use crate::vec3::{Vector3, cross};
+use crate::vec3::{cross, random_in_unit_disk, Vector3};
 
 pub struct Builder {
     // image
@@ -14,10 +14,12 @@ pub struct Builder {
     image_aspect_ratio: f64, // width: height
 
     // viewport
-    vfov: f64,
+    vup: Vector3,
     lookfrom: Point3,
     lookat: Point3,
-    vup: Vector3,
+    vfov: f64,
+    defocus_angle: f64,
+    focus_dist: f64,
 
     // samples
     samples_per_pixel: u32,
@@ -33,6 +35,8 @@ impl Builder {
             lookfrom: Point3::new_default(),
             lookat: Point3::new_default(),
             vup: Vector3::new_default(),
+            defocus_angle: 0.0,
+            focus_dist: 0.0,
             samples_per_pixel: 0,
             max_depth: 0,
         }
@@ -77,6 +81,16 @@ impl Builder {
         self
     }
 
+    pub fn set_defocus_angle(&mut self, defocus_angle: f64) -> &mut Self {
+        self.defocus_angle = defocus_angle;
+        self
+    }
+
+    pub fn set_focus_dist(&mut self, focus_dist: f64) -> &mut Self {
+        self.focus_dist = focus_dist;
+        self
+    }
+
     pub fn build(&self) -> Camera {
         // image
         let mut image_height = ((self.image_width as f64) / self.image_aspect_ratio) as u32;
@@ -86,10 +100,9 @@ impl Builder {
         let vec_to_target = self.lookfrom - self.lookat;
 
         let center = self.lookfrom; // world space
-        let focal_length = vec_to_target.length();
         let theta = degrees_to_radians(self.vfov);
         let h = f64::tan(theta / 2.0);
-        let viewport_height = 2.0 * h * focal_length;
+        let viewport_height = 2.0 * h * self.focus_dist;
         let viewport_width = viewport_height * ((self.image_width as f64) / (image_height as f64));
 
         let w = vec_to_target.normalize().unwrap();
@@ -103,11 +116,15 @@ impl Builder {
         let pixel_delta_v = viewport_v * (1.0 / (image_height as f64));
 
         let viewport_upper_left = center
-            - (focal_length * w)
+            - (self.focus_dist * w)
             - (viewport_u * 0.5)
             - (viewport_v * 0.5);
 
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v); 
+
+        let defocus_radius = self.focus_dist * f64::tan(degrees_to_radians(self.defocus_angle / 2.0));
+        let defocus_disk_u = u * defocus_radius;
+        let defocus_disk_v = v * defocus_radius;
 
         Camera {
             image_width: self.image_width,
@@ -118,6 +135,9 @@ impl Builder {
             center,
             samples_per_pixel: self.samples_per_pixel,
             max_depth: self.max_depth,
+            defocus_disk_u,
+            defocus_disk_v,
+            defocus_angle: self.defocus_angle,
         }
     }
 }
@@ -131,6 +151,9 @@ pub struct Camera {
     pixel_delta_u: Point3,
     pixel_delta_v: Point3,
     pixel00_loc: Point3,
+    defocus_disk_u: Vector3,
+    defocus_disk_v: Vector3,
+    defocus_angle: f64,
 
     // center
     center: Point3,
@@ -176,7 +199,8 @@ impl Camera {
         let offset = Point3::new(random_double() - 0.5, random_double() - 0.5, 0.0);
         let pixel_sample = self.pixel00_loc + ((i as f64) + offset.x()) * self.pixel_delta_u + ((j as f64) + offset.y()) * self.pixel_delta_v;
 
-        let ray_direction = pixel_sample - self.center;
+        let ray_origin = if self.defocus_angle <= 0.0 { self.center } else { self.defocus_disk_sample() };
+        let ray_direction = pixel_sample - ray_origin;
 
         Ray::new(&self.center, &ray_direction)
     }
@@ -205,5 +229,11 @@ impl Camera {
         let alpha = 0.5 * (unit_direction.y() + 1.0); 
 
         (1.0 - alpha) * Color::new(1.0, 1.0, 1.0) + alpha * Color::new(0.5, 0.7, 1.0)
+    }
+
+    fn defocus_disk_sample(&self) -> Vector3 { 
+        let p = random_in_unit_disk();
+
+        self.center + (p.x() * self.defocus_disk_u) + (p.y() * self.defocus_disk_v)
     }
 }

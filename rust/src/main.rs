@@ -43,6 +43,8 @@ fn main() -> std::io::Result<()> {
         .set_lookfrom(&Point3::new(-2.0, 2.0, 1.0))
         .set_lookat(&Point3::new(0.0, 0.0, -1.0))
         .set_vup(&Vector3::new(0.0, 1.0, 0.0))
+        .set_defocus_angle(0.5)
+        .set_focus_dist(3.4)
         .build();
 
     camera.render(&world)?;

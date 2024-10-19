@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use crate::util;
+use crate::util::{self, random_double, random_double_in_range};
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vector3(f64, f64, f64);
@@ -210,6 +210,19 @@ pub fn refract(uv: &Vector3, n: &Vector3, etai_over_etat: f64) -> Vector3 {
     r_out_parallel + r_out_perp
 }
 
+
+#[inline]
+pub fn random_in_unit_disk() -> Vector3 {
+    loop {
+        let x = random_double_in_range(-1.0, 1.0);
+        let y = random_double_in_range(-1.0, 1.0);
+        let p = Vector3::new(x, y, 0.0);
+
+        if p.length_squared() < 1.0 {
+            return p
+        }
+    }
+}
 
 
 #[cfg(test)]
