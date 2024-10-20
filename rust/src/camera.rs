@@ -1,4 +1,6 @@
 use std::io::{self, BufWriter, Write};
+use std::sync::{mpsc, Arc};
+use std::thread;
 
 use crate::point::Point3;
 use crate::ray::Ray;
@@ -177,14 +179,31 @@ impl Camera {
                 stderr.write(format!("\rScanlines remaining: {} ", self.image_height - j).as_bytes())?;
                 stderr.flush()?;
 
-                let mut pixel_color = Color::new_default();
+                let (tx, rx) = mpsc::channel(); 
+                let samples_per_thread = if self.samples_per_pixel > 4 { self.samples_per_pixel / 4 } else { 1 };
 
-                for _ in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&ray, self.max_depth, world);
+                // four threads
+                for _ in 0..4 {
+                    let tx_clone = tx.clone();
+
+                    todo!("Implement the Sync trait for hittable");
+                    
+                    thread::spawn(move || {
+                        let mut pixel_color = Color::new_default();
+
+                        for _ in 0..samples_per_thread {
+                            let ray = self.get_ray(i, j);
+                            pixel_color += Self::ray_color(&ray, self.max_depth, world);
+                        }
+
+                        tx_clone.send(pixel_color);
+                    });
                 }
 
-                write_color(&mut stdout, &(pixel_color * (1.0 / self.samples_per_pixel as f64)))?;
+                for recved in rx {
+                    write_color(&mut stdout, &(recved * (1.0 / self.samples_per_pixel as f64)))?;
+                }
+
             }
         }
 

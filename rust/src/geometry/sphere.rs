@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::material::Material;
 use crate::{point::Point3, util::interval::Interval};
@@ -9,15 +9,15 @@ use super::hittable::{Hittable, HitRecord};
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    mat: Rc<dyn Material>,
+    mat: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: &Point3, radius: f64, mat: Rc<dyn Material>) -> Self {
+    pub fn new(center: &Point3, radius: f64, mat: Arc<dyn Material>) -> Self {
         Self {
             center: center.clone(),
             radius: f64::max(radius, 0.0),
-            mat: Rc::clone(&mat)
+            mat: Arc::clone(&mat)
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::material::Material;
 use crate::ray::Ray;
@@ -9,7 +9,7 @@ use crate::vec3::{dot, Vector3};
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vector3,
-    pub mat: Option<Rc<dyn Material>>,
+    pub mat: Option<Arc<dyn Material>>,
     pub t: f64,
     pub front_face: bool,
 }
@@ -40,8 +40,8 @@ impl HitRecord {
         Ok(())
     }
 
-    pub fn set_material(&mut self, material: &Rc<dyn Material>) {
-        self.mat = Some(Rc::clone(material));
+    pub fn set_material(&mut self, material: &Arc<dyn Material>) {
+        self.mat = Some(Arc::clone(material));
     }
 }
 
@@ -50,17 +50,18 @@ pub trait Hittable {
 }
 
 pub struct HittableList {
-    pub objects: Vec<Rc<dyn Hittable>>, // REMARK: only for single threaded runtime
+    pub objects: Vec<Arc<dyn Hittable>>,
 }
+
 
 impl HittableList {
     pub fn new() -> Self {
         Self {
-            objects: vec![]
+            objects: vec![],
         }
     }
 
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
 
