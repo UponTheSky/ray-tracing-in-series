@@ -1,8 +1,8 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use crate::material::Material;
-use crate::ray::Ray;
 use crate::point::Point3;
+use crate::ray::Ray;
 use crate::util::interval::Interval;
 use crate::vec3::{dot, Vector3};
 
@@ -25,16 +25,20 @@ impl HitRecord {
         }
     }
 
-    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: &Vector3) -> Result<(), &'static str> {
+    pub fn set_face_normal(
+        &mut self,
+        ray: &Ray,
+        outward_normal: &Vector3,
+    ) -> Result<(), &'static str> {
         if f64::abs(outward_normal.length() - 1.0) > 0.005 {
             return Err("outword normal is not a unit vector");
         }
 
         self.front_face = dot(ray.direction(), outward_normal) < 0.0;
-        self.normal = if self.front_face { 
-            outward_normal.clone() 
-        } else { 
-            -outward_normal.clone() 
+        self.normal = if self.front_face {
+            outward_normal.clone()
+        } else {
+            -outward_normal.clone()
         };
 
         Ok(())
@@ -45,7 +49,7 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Sync + Send {
     fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
 }
 
@@ -53,12 +57,9 @@ pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
 }
 
-
 impl HittableList {
     pub fn new() -> Self {
-        Self {
-            objects: vec![],
-        }
+        Self { objects: vec![] }
     }
 
     pub fn add(&mut self, object: Arc<dyn Hittable>) {
@@ -68,7 +69,6 @@ impl HittableList {
     pub fn clear(&mut self) {
         self.objects.clear();
     }
-
 }
 
 impl Hittable for HittableList {
@@ -77,7 +77,7 @@ impl Hittable for HittableList {
         let mut hit_anything = false;
         let mut closest_so_far = ray_t.max;
 
-        self.objects.iter().for_each(|object|{
+        self.objects.iter().for_each(|object| {
             if object.hit(ray, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;

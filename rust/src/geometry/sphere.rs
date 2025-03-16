@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
+use super::hittable::{HitRecord, Hittable};
 use crate::material::Material;
-use crate::{point::Point3, util::interval::Interval};
 use crate::ray::Ray;
 use crate::vec3::dot;
-use super::hittable::{Hittable, HitRecord};
+use crate::{point::Point3, util::interval::Interval};
 
 pub struct Sphere {
     center: Point3,
@@ -17,7 +17,7 @@ impl Sphere {
         Self {
             center: center.clone(),
             radius: f64::max(radius, 0.0),
-            mat: Arc::clone(&mat)
+            mat: Arc::clone(&mat),
         }
     }
 }
@@ -42,7 +42,7 @@ impl Hittable for Sphere {
 
         if !ray_t.surrounds(root) {
             root = (h + sqrtd) / a;
-            
+
             if !ray_t.surrounds(root) {
                 return false;
             }
@@ -56,6 +56,5 @@ impl Hittable for Sphere {
         rec.set_material(&self.mat);
 
         return true;
-
     }
 }

@@ -2,12 +2,12 @@ use std::io::{self, BufWriter, Write};
 use std::sync::{mpsc, Arc};
 use std::thread;
 
+use crate::color::{write_color, Color};
+use crate::geometry::hittable::{HitRecord, Hittable, HittableList};
 use crate::point::Point3;
 use crate::ray::Ray;
-use crate::geometry::hittable::{Hittable, HitRecord};
 use crate::util::{degrees_to_radians, random_double};
-use crate::util::{INFINITY, interval::Interval};
-use crate::color::{write_color, Color};
+use crate::util::{interval::Interval, INFINITY};
 use crate::vec3::{cross, random_in_unit_disk, Vector3};
 
 pub struct Builder {
@@ -117,14 +117,13 @@ impl Builder {
         let pixel_delta_u = viewport_u * (1.0 / (self.image_width as f64));
         let pixel_delta_v = viewport_v * (1.0 / (image_height as f64));
 
-        let viewport_upper_left = center
-            - (self.focus_dist * w)
-            - (viewport_u * 0.5)
-            - (viewport_v * 0.5);
+        let viewport_upper_left =
+            center - (self.focus_dist * w) - (viewport_u * 0.5) - (viewport_v * 0.5);
 
-        let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v); 
+        let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
-        let defocus_radius = self.focus_dist * f64::tan(degrees_to_radians(self.defocus_angle / 2.0));
+        let defocus_radius =
+            self.focus_dist * f64::tan(degrees_to_radians(self.defocus_angle / 2.0));
         let defocus_disk_u = u * defocus_radius;
         let defocus_disk_v = v * defocus_radius;
 
@@ -145,7 +144,7 @@ impl Builder {
 }
 
 pub struct Camera {
-    // image 
+    // image
     image_width: u32,
     image_height: u32,
 
@@ -165,10 +164,9 @@ pub struct Camera {
     max_depth: u32,
 }
 
-
 impl Camera {
     // builder pattern
-    pub fn render(&self, world: &dyn Hittable) -> std::io::Result<()> {
+    pub fn render(&self, world: Arc<HittableList>) -> std::io::Result<()> {
         let mut stdout = BufWriter::new(io::stdout().lock());
         let mut stderr = BufWriter::new(io::stderr().lock());
         stdout.write(b"P3\n")?;
@@ -176,34 +174,54 @@ impl Camera {
 
         for j in 0..self.image_height {
             for i in 0..self.image_width {
-                stderr.write(format!("\rScanlines remaining: {} ", self.image_height - j).as_bytes())?;
+                stderr.write(
+                    format!("\rScanlines remaining: {} ", self.image_height - j).as_bytes(),
+                )?;
                 stderr.flush()?;
 
-                let (tx, rx) = mpsc::channel(); 
-                let samples_per_thread = if self.samples_per_pixel > 4 { self.samples_per_pixel / 4 } else { 1 };
+                let (tx, rx) = mpsc::channel();
+                let samples_per_thread = if self.samples_per_pixel > 4 {
+                    self.samples_per_pixel / 4
+                } else {
+                    1
+                };
 
                 // four threads
+                thread::scope(|scope| {
+                    let mut joins = vec![];
+
+                    for _ in 0..4 {
+                        let join = scope.spawn(|| {
+                            let mut pixel_color = Color::new_default();
+
+                            for _ in 0..samples_per_thread {
+                                let ray = self.get_ray(i, j);
+                                pixel_color +=
+                                    Self::ray_color(&ray, self.max_depth, Arc::clone(&world));
+                            }
+                            let tx_clone = tx.clone();
+
+                            let _ = tx_clone.send(pixel_color);
+                        });
+
+                        joins.push(join);
+                    }
+
+                    for j in joins {
+                        let _ = j.join();
+                    }
+                });
+
+                let mut recved_color = Color::new_default();
+
                 for _ in 0..4 {
-                    let tx_clone = tx.clone();
-
-                    todo!("Implement the Sync trait for hittable");
-                    
-                    thread::spawn(move || {
-                        let mut pixel_color = Color::new_default();
-
-                        for _ in 0..samples_per_thread {
-                            let ray = self.get_ray(i, j);
-                            pixel_color += Self::ray_color(&ray, self.max_depth, world);
-                        }
-
-                        tx_clone.send(pixel_color);
-                    });
+                    recved_color += rx.recv().unwrap();
                 }
 
-                for recved in rx {
-                    write_color(&mut stdout, &(recved * (1.0 / self.samples_per_pixel as f64)))?;
-                }
-
+                write_color(
+                    &mut stdout,
+                    &(recved_color * (1.0 / self.samples_per_pixel as f64)),
+                )?;
             }
         }
 
@@ -216,15 +234,21 @@ impl Camera {
 
     fn get_ray(&self, i: u32, j: u32) -> Ray {
         let offset = Point3::new(random_double() - 0.5, random_double() - 0.5, 0.0);
-        let pixel_sample = self.pixel00_loc + ((i as f64) + offset.x()) * self.pixel_delta_u + ((j as f64) + offset.y()) * self.pixel_delta_v;
+        let pixel_sample = self.pixel00_loc
+            + ((i as f64) + offset.x()) * self.pixel_delta_u
+            + ((j as f64) + offset.y()) * self.pixel_delta_v;
 
-        let ray_origin = if self.defocus_angle <= 0.0 { self.center } else { self.defocus_disk_sample() };
+        let ray_origin = if self.defocus_angle <= 0.0 {
+            self.center
+        } else {
+            self.defocus_disk_sample()
+        };
         let ray_direction = pixel_sample - ray_origin;
 
         Ray::new(&self.center, &ray_direction)
     }
 
-    fn ray_color(ray: &Ray, depth: u32, world: &dyn Hittable) -> Color {
+    fn ray_color(ray: &Ray, depth: u32, world: Arc<HittableList>) -> Color {
         if depth <= 0 {
             return Color::new(0.0, 0.0, 0.0);
         }
@@ -233,24 +257,26 @@ impl Camera {
 
         if world.hit(ray, Interval::new(0.001, INFINITY), &mut rec) {
             let mut scattered = Ray::new_default();
-            let mut attenuation = Color::new_default(); 
+            let mut attenuation = Color::new_default();
             let material = rec.mat.clone();
 
-            if material.unwrap().scatter(ray, &rec, &mut attenuation, &mut scattered) {
-                return attenuation * Camera::ray_color(&scattered, depth-1, world);
+            if material
+                .unwrap()
+                .scatter(ray, &rec, &mut attenuation, &mut scattered)
+            {
+                return attenuation * Camera::ray_color(&scattered, depth - 1, world);
             } else {
                 return Color::new(0.0, 0.0, 0.0);
             }
-
-        } 
+        }
 
         let unit_direction = ray.direction().normalize().unwrap();
-        let alpha = 0.5 * (unit_direction.y() + 1.0); 
+        let alpha = 0.5 * (unit_direction.y() + 1.0);
 
         (1.0 - alpha) * Color::new(1.0, 1.0, 1.0) + alpha * Color::new(0.5, 0.7, 1.0)
     }
 
-    fn defocus_disk_sample(&self) -> Vector3 { 
+    fn defocus_disk_sample(&self) -> Vector3 {
         let p = random_in_unit_disk();
 
         self.center + (p.x() * self.defocus_disk_u) + (p.y() * self.defocus_disk_v)

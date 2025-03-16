@@ -1,18 +1,19 @@
+mod camera;
 mod color;
+mod geometry;
+mod material;
 mod point;
 mod ray;
-mod vec3;
-mod geometry;
 mod util;
-mod camera;
-mod material;
+mod vec3;
 
-use std::sync::Arc;
+use crate::camera::{Builder, Camera};
 use color::Color;
+use geometry::hittable::{Hittable, HittableList};
 use geometry::sphere::Sphere;
 use material::{Dielectric, Lambertian, Metal};
 use point::Point3;
-use geometry::hittable::HittableList;
+use std::sync::{Arc, LazyLock, RwLock};
 use vec3::Vector3;
 
 fn main() -> std::io::Result<()> {
@@ -26,15 +27,36 @@ fn main() -> std::io::Result<()> {
     let material_bubble = Arc::new(Dielectric::new(1.00 / 1.50));
     let material_right = Arc::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 1.0));
 
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground,
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, 0.0, -1.2),
+        0.5,
+        material_center,
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(-1.0, 0.0, -1.0),
+        0.4,
+        material_bubble,
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
+    )));
 
-    world.add(Arc::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0, material_ground)));
-    world.add(Arc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.2), 0.5, material_center)));
-    world.add(Arc::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
-    world.add(Arc::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.0), 0.4, material_bubble)));
-    world.add(Arc::new(Sphere::new(&Point3::new(1.0, 0.0, -1.0), 0.5, material_right)));
+    let world_arc = Arc::new(world);
 
     // camera
-    let camera = camera::Builder::new()
+    let camera = Builder::new()
         .set_image_width(400)
         .set_image_aspect_ratio(16.0 / 9.0)
         .set_samples_per_pixel(100)
@@ -47,7 +69,7 @@ fn main() -> std::io::Result<()> {
         .set_focus_dist(3.4)
         .build();
 
-    camera.render(&world)?;
+    camera.render(Arc::clone(&world_arc))?;
 
     Ok(())
 }
