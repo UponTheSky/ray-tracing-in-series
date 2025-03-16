@@ -10,6 +10,8 @@ use crate::util::{degrees_to_radians, random_double};
 use crate::util::{interval::Interval, INFINITY};
 use crate::vec3::{cross, random_in_unit_disk, Vector3};
 
+const THREAED_NUMBER: usize = 4;
+
 pub struct Builder {
     // image
     image_width: u32,
@@ -180,8 +182,8 @@ impl Camera {
                 stderr.flush()?;
 
                 let (tx, rx) = mpsc::channel();
-                let samples_per_thread = if self.samples_per_pixel > 4 {
-                    self.samples_per_pixel / 4
+                let samples_per_thread = if self.samples_per_pixel > THREAED_NUMBER as u32 {
+                    self.samples_per_pixel / THREAED_NUMBER as u32
                 } else {
                     1
                 };
@@ -190,7 +192,7 @@ impl Camera {
                 thread::scope(|scope| {
                     let mut joins = vec![];
 
-                    for _ in 0..4 {
+                    for _ in 0..THREAED_NUMBER {
                         let join = scope.spawn(|| {
                             let mut pixel_color = Color::new_default();
 
@@ -214,7 +216,7 @@ impl Camera {
 
                 let mut recved_color = Color::new_default();
 
-                for _ in 0..4 {
+                for _ in 0..THREAED_NUMBER {
                     recved_color += rx.recv().unwrap();
                 }
 

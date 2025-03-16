@@ -14,9 +14,12 @@ use geometry::sphere::Sphere;
 use material::{Dielectric, Lambertian, Metal};
 use point::Point3;
 use std::sync::{Arc, LazyLock, RwLock};
+use std::time::SystemTime;
 use vec3::Vector3;
 
 fn main() -> std::io::Result<()> {
+    let start = SystemTime::now();
+
     // world
     let mut world = HittableList::new();
 
@@ -70,6 +73,10 @@ fn main() -> std::io::Result<()> {
         .build();
 
     camera.render(Arc::clone(&world_arc))?;
+
+    let now = SystemTime::now().duration_since(start).unwrap();
+
+    dbg!(now);
 
     Ok(())
 }
